@@ -186,3 +186,24 @@ export async function pollForResult(requestId, apiKey, onLog) {
   throw new Error(timeoutError);
 }
 
+// Download image function using proxy endpoint
+export async function downloadImage(imageUrl, filename = 'generated-image') {
+  try {
+    // Use our proxy endpoint to download the image
+    const downloadUrl = `/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(filename)}`;
+
+    // Create a temporary anchor element and trigger download
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `${filename}.png`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+  } catch (error) {
+    console.error('Error downloading image:', error);
+    throw new Error('Failed to download image: ' + error.message);
+  }
+}
+

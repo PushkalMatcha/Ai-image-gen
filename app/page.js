@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { X, Plus, Slash } from 'lucide-react';
-import { generateImage, pollForResult, generateLoraImage } from './lib/muapi';
+import { generateImage, pollForResult, generateLoraImage, downloadImage } from './lib/muapi';
 
 export const fluxModels = [
 	{
@@ -1078,6 +1078,24 @@ async function handleEditImage() {
 }
 }
 
+	// Handle image download
+	const [downloadingIndex, setDownloadingIndex] = useState(null);
+
+	const handleDownloadImage = async (imageUrl, index) => {
+		try {
+			setDownloadingIndex(index);
+			const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+			const filename = `ai-generated-image-${index + 1}-${timestamp}`;
+			await downloadImage(imageUrl, filename);
+			setLogMessages(logs => [...logs, `Image ${index + 1} downloaded successfully`]);
+		} catch (error) {
+			console.error('Download failed:', error);
+			setLogMessages(logs => [...logs, `Download failed: ${error.message}`]);
+		} finally {
+			setDownloadingIndex(null);
+		}
+	};
+
 	return (
 		<>
 	   <Head>
@@ -1417,7 +1435,51 @@ async function handleEditImage() {
 		  ) : generatedImages.length > 0 ? (
 			<div className="flex flex-wrap justify-center gap-6">
 			  {generatedImages.map((url, i) => (
-				<img key={i} src={url} alt="Generated" className="rounded-xl max-h-96 border border-gray-700" />
+				<div key={i} className="relative group">
+				  <img
+					src={url}
+					alt={`Generated image ${i + 1}`}
+					className="rounded-xl max-h-96 border border-gray-700"
+				  />
+				  {/* Download button overlay */}
+				  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+					<button
+					  onClick={() => handleDownloadImage(url, i)}
+					  disabled={downloadingIndex === i}
+					  className="bg-black/70 hover:bg-black/90 text-white p-2 rounded-lg backdrop-blur-sm transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+					  title={downloadingIndex === i ? "Downloading..." : "Download image"}
+					>
+					  {downloadingIndex === i ? (
+						<svg
+						  width="20"
+						  height="20"
+						  viewBox="0 0 24 24"
+						  fill="none"
+						  stroke="currentColor"
+						  strokeWidth="2"
+						  className="animate-spin"
+						>
+						  <path d="M21 12a9 9 0 11-6.219-8.56"/>
+						</svg>
+					  ) : (
+						<svg
+						  width="20"
+						  height="20"
+						  viewBox="0 0 24 24"
+						  fill="none"
+						  stroke="currentColor"
+						  strokeWidth="2"
+						  strokeLinecap="round"
+						  strokeLinejoin="round"
+						>
+						  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+						  <polyline points="7,10 12,15 17,10"/>
+						  <line x1="12" y1="15" x2="12" y2="3"/>
+						</svg>
+					  )}
+					</button>
+				  </div>
+				</div>
 			  ))}
 			</div>
 		  ) : (
