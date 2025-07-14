@@ -4,10 +4,32 @@ const POLL_INTERVAL = 1000; // 1 second
 const MAX_POLL_TIME = 300000; // 5 minutes
 
 // Generate image for LoRA models
-export async function generateLoraImage({ prompt, model_id, width, height, num_images, apiKey, onLog }) {
+export async function generateLoraImage({ prompt, model_id, width, height, num_images, apiKey, aspectRatio, onLog }) {
   const proxyUrl = '/api/proxy';
-  const apiUrl = 'https://api.muapi.ai/api/v1/generate_flux_dev_lora_image';
-  const payload = { prompt, model_id, width, height, num_images };
+  const apiUrl = 'https://api.muapi.ai/api/v1/flux_dev_lora_image';
+
+  // Convert model_id string to the required array format
+  let modelIdArray;
+  if (typeof model_id === 'string' && model_id.startsWith('civitai:')) {
+    modelIdArray = [{ model: model_id, weight: 1.0 }];
+  } else if (Array.isArray(model_id)) {
+    modelIdArray = model_id;
+  } else {
+    throw new Error('Invalid model_id format. Expected civitai:id@version string or array.');
+  }
+
+  const payload = {
+    prompt,
+    model_id: modelIdArray,
+    width,
+    height,
+    num_images
+  };
+
+  // Add aspect ratio if provided
+  if (aspectRatio) {
+    payload.aspect_ratio = aspectRatio;
+  }
   try {
     if (onLog) onLog('Submitting LoRA image generation task...');
     const response = await axios.post(proxyUrl, {
@@ -46,6 +68,8 @@ const modelEndpointMap = {
   'HiDream I1 Full': 'https://api.muapi.ai/api/v1/hidream_i1_full_image',
   // Flux Kontext model (no width/height required)
   'Flux Kontext Dev T2I': 'https://api.muapi.ai/api/v1/flux_kontext_dev_text_to_image',
+  // Flux LoRA model (requires model_id array)
+  'Flux LoRA': 'https://api.muapi.ai/api/v1/flux_dev_lora_image',
   // Use working hidream endpoint as fallback since flux_dev is returning 500 errors
   'Flux Schnell': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
   'Flux LoRA': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint

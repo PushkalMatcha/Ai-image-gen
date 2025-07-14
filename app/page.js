@@ -949,13 +949,38 @@ async function handleGenerate() {
 	setLogMessages(logs => [...logs, '[Request] ' + JSON.stringify(payload, null, 2)]);
 	let data = null;
 	try {
-	data = await generateImage({
-	  ...payload,
-	  onLog: (msg) => {
-		console.log('[onLog callback]', msg);
-		setLogMessages(logs => [...logs, msg]);
-	  }
-	});
+	// Check if Flux LoRA model is selected
+	if (selectedModel === 'Flux LoRA') {
+		// Validate LoRA model selection
+		if (!selectedLoRAModelId) {
+			setLogMessages(logs => [...logs, 'Please select a LoRA model first.']);
+			setLoading(false);
+			return;
+		}
+		// Use LoRA generation
+		data = await generateLoraImage({
+			prompt,
+			model_id: selectedLoRAModelId,
+			width,
+			height,
+			num_images: numImages || 1,
+			apiKey: userApiKey,
+			aspectRatio: aspectRatio === 'custom' ? `${customWidth}:${customHeight}` : aspectRatio,
+			onLog: (msg) => {
+				console.log('[onLog callback]', msg);
+				setLogMessages(logs => [...logs, msg]);
+			}
+		});
+	} else {
+		// Use regular generation
+		data = await generateImage({
+		  ...payload,
+		  onLog: (msg) => {
+			console.log('[onLog callback]', msg);
+			setLogMessages(logs => [...logs, msg]);
+		  }
+		});
+	}
 		setLogMessages(logs => [...logs, '[Response] ' + JSON.stringify(data, null, 2)]);
 	} catch (err) {
 		setLogMessages(logs => [...logs, '[Backend Error] ' + err.message]);
@@ -1015,7 +1040,8 @@ async function handleEditImage() {
 			width,
 			height,
 			num_images,
-			apiKey: userApiKey
+			apiKey: userApiKey,
+			aspectRatio: aspectRatio === 'custom' ? `${customWidth}:${customHeight}` : aspectRatio
 		};
 	setLogMessages(logs => [...logs, '[Request] ' + JSON.stringify(payload, null, 2)]);
 	let data = null;
