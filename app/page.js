@@ -5,15 +5,7 @@ import { X, Plus, Slash } from 'lucide-react';
 import { generateImage, pollForResult, generateLoraImage, downloadImage, editImage as editImageAPI } from './lib/muapi';
 
 export const fluxModels = [
-	{
-		id: "schnell",
-		name: "Flux Schnell",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/230967527308/d65c9c50-3604-43fe-9255-92685a84c91d.jpg",
-		description: "High-quality images from text in 1 to 4 steps",
-		duration: 5,
-		credits: 2,
-		num: 4
-	},
+
 	{
 		id: "dev",
 		name: "Flux Dev",
@@ -33,113 +25,6 @@ export const fluxModels = [
 		num: 2
 	},
 	{
-		id: "pro",
-		name: "Flux Pro v1.1",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/420959112663/960e8ada-f6d9-4894-9ca1-8cf2436e47c8.jpg",
-		description: "Professional version with enhanced capabilities",
-		isPro: true,
-		duration: 25,
-		credits: 12,
-		num: 1
-	},
-	{
-		id: "ultra",
-		name: "Flux Pro Ultra v1.1",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/411267126627/fd2e347d-e308-45c5-abfe-c5e9ac49b99c.jpg",
-		description: "Ultimate version with maximum quality",
-		isPro: true,
-		duration: 30,
-		credits: 18,
-		num: 1
-	},
-	{
-		id: "bytedance",
-		name: "Seedream-v3",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/958012868787/9ae11fa2-2ed6-412f-8834-e4e437bdfb04.jpg",
-		description: "It transforms text into vivid images with remarkable details.",
-		duration: 10,
-		credits: 5,
-		num: 1
-	},
-	{
-		id: "kontext",
-		name: "Flux Kontext",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/379496223892/f81495f7-de22-4579-bc46-91fd8f90f3f3.jpg",
-		description: "It delivers state-of-the-art image generation results",
-		isPro: true,
-		duration: 10,
-		credits: 8,
-		num: 1
-	},
-	{
-		id: "recraft",
-		name: "Recraft-v3",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/fake_text/profile_images/186/699675542299/phYdzaZKutHgEIdAqguSd_image.webp",
-		description: "Recraft-v3 generate vector art, images in brand style and more",
-		duration: 10,
-		credits: 15,
-		num: 1
-	},
-	{
-		id: "minimax",
-		name: "Minimax/Hailuoai",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/304342023192/b9b55144-03de-424a-918b-d6dcd12fa0a4.jpg",
-		description: "Longer text prompts will result in better quality images.",
-		isPro: true,
-		duration: 10,
-		credits: 12,
-		num: 2
-	},
-	{
-		id: "imagen3",
-		name: "Google Imagen 3",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/781515889759/1647c937-a447-40e1-9d16-365d6bfe0c4b.jpg",
-		description: "Google's advanced AI image generation model",
-		isPro: true,
-		duration: 10,
-		credits: 6,
-		num: 2
-	},
-	{
-		id: "imagen4",
-		name: "Google Imagen 4",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/153202992159/a9ce2d81-ffd3-41b4-9742-93a497c2e105.jpg",
-		description: "Google’s highest quality image generation model",
-		isPro: true,
-		duration: 10,
-		credits: 10,
-		num: 2
-	},
-	{
-		id: "midjourney",
-		name: "Midjourney v7",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/403104061561/77e7a150-d68d-4c03-b18e-bcb177c93f1b.jpg",
-		description: "Midjorney v7 generates 4 unique images",
-		duration: 10,
-		credits: 6,
-		num: 4
-	},
-	{
-		id: "ideogram",
-		name: "Ideogram v3",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/495423469201/b7c44c4a-c6c5-4a39-93f2-663047f9bed5.jpg",
-		description: "High quality images with accurate text rendering",
-		isPro: true,
-		duration: 30,
-		credits: 12,
-		num: 1
-	},
-	{
-		id: "gpt",
-		name: "GPT-Image-1",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/166725730729/e2fc912f-9394-44b7-a9c2-eaac178f7c27.jpg",
-		description: "This multimodal AI that seamlessly understands and generates images.",
-		isPro: true,
-		duration: 30,
-		credits: 12,
-		num: 1
-	},
-	{
 		id: "hidream-i1-fast",
 		name: "HiDream I1 Fast",
 		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/230967527308/d65c9c50-3604-43fe-9255-92685a84c91d.jpg",
@@ -151,7 +36,7 @@ export const fluxModels = [
 	{
 		id: "hidream-i1-dev",
 		name: "HiDream I1 Dev",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/325703928897/e3f3bcbc-c6ef-46de-9639-2fb7498eabad.jpg",
+		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/958012868787/9ae11fa2-2ed6-412f-8834-e4e437bdfb04.jpg",
 		description: "Development version of HiDream I1 model with enhanced features",
 		duration: 10,
 		credits: 5,
@@ -170,7 +55,7 @@ export const fluxModels = [
 	{
 		id: "flux-kontext-dev-t2i",
 		name: "Flux Kontext Dev T2I",
-		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/528394751829/b4c8e9f2-7a3d-4e8b-9f6c-1d2e3f4a5b6c.jpg",
+		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/411267126627/fd2e347d-e308-45c5-abfe-c5e9ac49b99c.jpg",
 		description: "Flux Kontext development model for text-to-image generation (auto dimensions)",
 		duration: 12,
 		credits: 6,
@@ -1180,20 +1065,7 @@ async function handleEditImage() {
 										<div className="p-3">
 											<h3 className="font-semibold text-base mb-1 text-white">{model.name}</h3>
 											<p className="text-xs text-gray-400 mb-3 min-h-[32px] leading-relaxed">{model.description}</p>
-											<div className="flex items-center gap-3 text-xs text-gray-500">
-												<span className="flex items-center gap-1">
-													<span>🖼️</span>
-													{model.num} Images
-												</span>
-												<span className="flex items-center gap-1">
-													<span>💎</span>
-													{model.credits} credits
-												</span>
-												<span className="flex items-center gap-1">
-													<span>⚡</span>
-													{model.duration}s
-												</span>
-											</div>
+
 										</div>
 									</div>
 								))}

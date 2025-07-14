@@ -58,11 +58,11 @@ export async function generateLoraImage({ prompt, model_id, width, height, num_i
 }
 
 // Map model name/id to endpoint
-// Note: HiDream endpoints are confirmed working, flux_dev has 500 errors
+
 const modelEndpointMap = {
   'Flux Dev': 'https://api.muapi.ai/api/v1/flux_dev_image',
   'flux-dev': 'https://api.muapi.ai/api/v1/flux_dev_image',
-  // HiDream models (confirmed working)
+
   'HiDream I1 Fast': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image',
   'HiDream I1 Dev': 'https://api.muapi.ai/api/v1/hidream_i1_dev_image',
   'HiDream I1 Full': 'https://api.muapi.ai/api/v1/hidream_i1_full_image',
@@ -70,20 +70,16 @@ const modelEndpointMap = {
   'Flux Kontext Dev T2I': 'https://api.muapi.ai/api/v1/flux_kontext_dev_text_to_image',
   // Flux LoRA model (requires model_id array)
   'Flux LoRA': 'https://api.muapi.ai/api/v1/flux_dev_lora_image',
-  // Use working hidream endpoint as fallback since flux_dev is returning 500 errors
-  'Flux Schnell': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Flux LoRA': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Flux Pro v1.1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Flux Pro Ultra v1.1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Seedream-v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Flux Kontext': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Recraft-v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Minimax/Hailuoai': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Google Imagen 3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Google Imagen 4': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Midjourney v7': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'Ideogram v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
-  'GPT-Image-1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  
+  'Flux Schnell': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Flux LoRA': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image',   
+  'Flux Pro v1.1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Flux Pro Ultra v1.1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Seedream-v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Flux Kontext': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Recraft-v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Minimax/Hailuoai': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
+  'Google Imagen 3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', 
 };
 
 // Models that don't require width/height parameters
