@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { X, Plus, Slash } from 'lucide-react';
-import { generateImage, pollForResult, generateLoraImage, downloadImage } from './lib/muapi';
+import { generateImage, pollForResult, generateLoraImage, downloadImage, editImage as editImageAPI } from './lib/muapi';
 
 export const fluxModels = [
 	{
@@ -1024,58 +1024,87 @@ async function handleEditImage() {
 		setShowApiKeyModal(true);
 		return;
 	}
-	if (!selectedLoRAModelId) {
-		setLogMessages(logs => [...logs, 'Please select a LoRA model first.']);
-		return;
-	}
 	setLoading(true);
 	setGeneratedImages([]);
 	try {
-		const width = 1024;
-		const height = 1024;
-		const num_images = 1;
+		// Aspect ratio logic
+		let width, height;
+		if (aspectRatio === 'custom') {
+			width = parseInt(customWidth) || 1024;
+			height = parseInt(customHeight) || 1024;
+		} else {
+			// Parse aspect ratio string (e.g., "16:9")
+			const [w, h] = aspectRatio.split(':').map(Number);
+			// Use a base size (e.g., 1024 for the largest dimension)
+			const base = 1024;
+			if (w >= h) {
+				width = base;
+				height = Math.round(base * h / w);
+			} else {
+				height = base;
+				width = Math.round(base * w / h);
+			}
+		}
+
 		const payload = {
 			prompt,
-			model_id: selectedLoRAModelId,
+			imageUrl: editImage,
 			width,
 			height,
-			num_images,
+			num_images: numImages || 1,
 			apiKey: userApiKey,
 			aspectRatio: aspectRatio === 'custom' ? `${customWidth}:${customHeight}` : aspectRatio
 		};
-	setLogMessages(logs => [...logs, '[Request] ' + JSON.stringify(payload, null, 2)]);
-	let data = null;
-	try {
-	data = await generateLoraImage({
-	  ...payload,
-	  onLog: (msg) => {
-		console.log('[onLog callback]', msg);
-		setLogMessages(logs => [...logs, msg]);
-	  }
-	});
-		setLogMessages(logs => [...logs, '[Response] ' + JSON.stringify(data, null, 2)]);
+
+		setLogMessages(logs => [...logs, '[Edit Request] ' + JSON.stringify(payload, null, 2)]);
+		let data = null;
+		try {
+			data = await editImageAPI({
+				...payload,
+				onLog: (msg) => {
+					console.log('[onLog callback]', msg);
+					setLogMessages(logs => [...logs, msg]);
+				}
+			});
+			setLogMessages(logs => [...logs, '[Response] ' + JSON.stringify(data, null, 2)]);
+		} catch (err) {
+			setLogMessages(logs => [...logs, '[Backend Error] ' + err.message]);
+			throw err;
+		}
+
+		const requestId = data.request_id;
+		let result = null;
+		try {
+			result = await pollForResult(requestId, userApiKey, (msg) => {
+				console.log('[onLog callback]', msg);
+				setLogMessages(logs => [...logs, msg]);
+			});
+			setLogMessages(logs => [...logs, '[Result] ' + JSON.stringify(result, null, 2)]);
+		} catch (err) {
+			setLogMessages(logs => [...logs, '[Polling Error] ' + err.message]);
+			throw err;
+		}
+
+		setGeneratedImages(result.outputs);
 	} catch (err) {
-		setLogMessages(logs => [...logs, '[Backend Error] ' + err.message]);
-		throw err;
+		let errorMessage = 'Image editing failed: ' + err.message;
+
+		// Add helpful error messages for common issues
+		if (err.message.includes('500')) {
+			errorMessage += '\n\n💡 Common causes of 500 errors:';
+			errorMessage += '\n• Invalid or missing API key';
+			errorMessage += '\n• Invalid image URL or format';
+			errorMessage += '\n• MuAPI service temporarily unavailable';
+			errorMessage += '\n\n🔧 Try:';
+			errorMessage += '\n• Verify your API key is correct';
+			errorMessage += '\n• Check that the image URL is accessible';
+			errorMessage += '\n• Try again in a few minutes';
+		}
+
+		setLogMessages(logs => [...logs, errorMessage]);
+	} finally {
+		setLoading(false);
 	}
-	const requestId = data.request_id;
-	let result = null;
-	try {
-	result = await pollForResult(requestId, userApiKey, (msg) => {
-	  console.log('[onLog callback]', msg);
-	  setLogMessages(logs => [...logs, msg]);
-	});
-		setLogMessages(logs => [...logs, '[Result] ' + JSON.stringify(result, null, 2)]);
-	} catch (err) {
-		setLogMessages(logs => [...logs, '[Polling Error] ' + err.message]);
-		throw err;
-	}
-	setGeneratedImages(result.outputs);
-} catch (err) {
-	setLogMessages(logs => [...logs, 'Image editing failed: ' + err.message]);
-} finally {
-	setLoading(false);
-}
 }
 
 	// Handle image download

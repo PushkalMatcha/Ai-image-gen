@@ -186,6 +186,60 @@ export async function pollForResult(requestId, apiKey, onLog) {
   throw new Error(timeoutError);
 }
 
+// Image-to-image editing function using Flux Kontext
+export async function editImage({ prompt, imageUrl, width, height, num_images, apiKey, aspectRatio, onLog }) {
+  const proxyUrl = '/api/proxy';
+  const apiUrl = 'https://api.muapi.ai/api/v1/flux_kontext_dev_image_to_image';
+
+  const payload = {
+    prompt,
+    images_list: [imageUrl],
+    num_images: num_images || 1
+  };
+
+  // Add aspect ratio if provided
+  if (aspectRatio) {
+    payload.aspect_ratio = aspectRatio;
+  }
+
+  // Add dimensions if provided (some models might need them)
+  if (width && height) {
+    payload.width = width;
+    payload.height = height;
+  }
+
+  try {
+    if (onLog) onLog('Submitting image editing task...');
+    if (onLog) onLog(`Using API endpoint: ${apiUrl}`);
+    if (onLog) onLog(`Payload: ${JSON.stringify(payload, null, 2)}`);
+
+    const response = await axios.post(proxyUrl, {
+      url: apiUrl,
+      method: 'POST',
+      data: payload,
+      apiKey
+    });
+
+    if (response.status === 200) {
+      if (onLog) onLog('Image editing task submitted. Request ID: ' + response.data.request_id);
+      return response.data;
+    } else {
+      const errMsg = `Error: ${response.status}, ${response.statusText}`;
+      if (onLog) onLog(errMsg);
+      throw new Error(errMsg);
+    }
+  } catch (error) {
+    let errMsg = 'Error submitting image editing task: ' + error.message;
+    if (error.response) {
+      errMsg += `\nStatus: ${error.response.status}`;
+      errMsg += `\nStatus Text: ${error.response.statusText}`;
+      errMsg += `\nResponse data: ${JSON.stringify(error.response.data, null, 2)}`;
+    }
+    if (onLog) onLog(errMsg);
+    throw new Error(errMsg);
+  }
+}
+
 // Download image function using proxy endpoint
 export async function downloadImage(imageUrl, filename = 'generated-image') {
   try {
