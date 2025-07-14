@@ -1087,6 +1087,17 @@ async function handleEditImage() {
 			value={apiKeyInput}
 			onChange={e => setApiKeyInput(e.target.value)}
 		  />
+		  <p className="text-sm text-gray-400 mb-4">
+			Don't have one?{' '}
+			<a
+			  href="https://muapi.ai/"
+			  target="_blank"
+			  rel="noopener noreferrer"
+			  className="text-purple-400 hover:text-purple-300 underline"
+			>
+			  Get it from https://muapi.ai/
+			</a>
+		  </p>
 		  <div className="flex justify-end gap-2">
 			<button
 			  className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600"
@@ -1112,15 +1123,16 @@ async function handleEditImage() {
 	  </div>
 	)}
 
-			<div className="min-h-screen bg-black text-white flex">
+			<div className="min-h-screen bg-gray-900/50 text-white flex">
 				{/* Sidebar - scrollable */}
 				<div className="w-80 bg-gray-900/50 p-6 space-y-6 border-r border-gray-800 min-h-screen max-h-screen overflow-y-auto backdrop-blur-sm sidebar-scrollbar">
 					{/* Sidebar Header */}
 	<div className="flex items-center space-x-3">
-	  <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg">
-		V
-	  </div>
-	  <span className="text-xl font-semibold">vadoo AI</span>
+	  <img
+		src="/vadoo-logo-white.png"
+		alt="Vadoo AI"
+		className="h-8 w-auto"
+	  />
 	</div>
 	{/* General Settings */}
 	<div className="space-y-5">
@@ -1300,7 +1312,7 @@ async function handleEditImage() {
 	</div>
   </div>
   {/* Main Content - fixed, does not scroll */}
-  <div className="flex-1 p-8 bg-black min-h-screen overflow-hidden">
+  <div className="flex-1 p-8 bg-gray-900/50 min-h-screen overflow-hidden">
 	{/* Tab Navigation */}
 	<div className="flex space-x-1 mb-8 bg-gray-900 p-1 rounded-xl w-fit">
 	  <button
@@ -1443,7 +1455,7 @@ async function handleEditImage() {
 		)}
 
 		<div className="flex items-center space-x-4 bg-gray-900 rounded-2xl p-4 border border-gray-800 hover:border-gray-700 transition-colors">
-				   <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+				   <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
 			<span className="text-white text-lg">✨</span>
 		  </div>
 		  <input
@@ -1472,13 +1484,13 @@ async function handleEditImage() {
   /* Remove homepage scrollbar hiding rules */
   html,
   body,
-  .min-h-screen.bg-black {
+  .min-h-screen.bg-gray-900\/50 {
 	scrollbar-width: auto !important;
 	-ms-overflow-style: auto !important;
   }
   html::-webkit-scrollbar,
   body::-webkit-scrollbar,
-  .min-h-screen.bg-black::-webkit-scrollbar {
+  .min-h-screen.bg-gray-900\/50::-webkit-scrollbar {
 	display: initial !important;
 	width: initial !important;
 	background: initial !important;
