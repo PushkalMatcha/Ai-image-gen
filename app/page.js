@@ -460,13 +460,13 @@ export default function VadooAI() {
 					  setSelectedLoRAName(option.name);
 					  onClose();
 					}}
-					className={`w-full bg-gray-800 rounded-lg p-4 flex items-start space-x-4 text-left transition-all ${
+					className={`w-full bg-gray-800 rounded-lg p-3 flex items-center space-x-3 text-left transition-all ${
 					  selectedLoRAModelId === model_id
 						? 'border-2 border-purple-500 shadow-lg shadow-purple-500/20'
 						: 'border border-gray-700 hover:border-gray-500'
 					}`}
 				  >
-					<div className="flex-shrink-0 w-16 h-16 bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+					<div className="flex-shrink-0 w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
 					  {option.image ? (
 						<img
 						  src={option.image}
@@ -478,11 +478,7 @@ export default function VadooAI() {
 						<div className="w-full h-full bg-gray-700 rounded-lg items-center justify-center text-gray-400 text-xs flex">IMG</div>
 					  )}
 					</div>
-					<div className="flex-1 min-w-0">
-					  <h3 className="text-white font-medium text-sm mb-1">{option.name}</h3>
-					  <p className="text-gray-400 text-xs leading-relaxed">{option.description || 'No description'}</p>
-					  <div className="text-xs text-gray-500 mt-1">ID: {model_id}</div>
-					</div>
+					<div className="text-white font-medium text-sm">{option.name}</div>
 				  </button>
 				);
 			  })
