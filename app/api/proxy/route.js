@@ -28,9 +28,12 @@ export async function POST(req) {
       throw new Error('API key is required');
     }
 
+    // Sanitize API key - remove any invalid characters for HTTP headers
+    const sanitizedApiKey = apiKey.trim().replace(/[\r\n\t]/g, '');
+
     // Log the API key format (first and last 4 characters for security)
-    const maskedApiKey = apiKey.length > 8 ?
-      `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` :
+    const maskedApiKey = sanitizedApiKey.length > 8 ?
+      `${sanitizedApiKey.substring(0, 4)}...${sanitizedApiKey.substring(sanitizedApiKey.length - 4)}` :
       '***masked***';
     console.log('API Key format:', maskedApiKey);
 
@@ -39,7 +42,7 @@ export async function POST(req) {
       method,
       headers: {
         ...headers,
-        'x-api-key': apiKey,
+        'x-api-key': sanitizedApiKey,
         'Content-Type': 'application/json'
       },
       data
@@ -124,11 +127,14 @@ export async function GET(req) {
       throw new Error('API key is required');
     }
 
+    // Sanitize API key - remove any invalid characters for HTTP headers
+    const sanitizedApiKey = apiKey.trim().replace(/[\r\n\t]/g, '');
+
     const config = {
       url,
       method: 'GET',
-      headers: { 
-        'x-api-key': apiKey,
+      headers: {
+        'x-api-key': sanitizedApiKey,
         'Content-Type': 'application/json'
       }
     };

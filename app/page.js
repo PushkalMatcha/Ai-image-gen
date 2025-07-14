@@ -1104,13 +1104,6 @@ async function handleEditImage() {
 			  onClick={() => {
 				setUserApiKey(apiKeyInput);
 				setShowApiKeyModal(false);
-				setTimeout(() => {
-				  if (activeTab === 'edit') {
-					handleEditImage();
-				  } else {
-					handleGenerate();
-				  }
-				}, 0);
 			  }}
 			  disabled={!apiKeyInput.trim()}
 			>Submit</button>
