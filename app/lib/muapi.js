@@ -1,0 +1,164 @@
+import axios from 'axios';
+
+const POLL_INTERVAL = 1000; // 1 second
+const MAX_POLL_TIME = 300000; // 5 minutes
+
+// Generate image for LoRA models
+export async function generateLoraImage({ prompt, model_id, width, height, num_images, apiKey, onLog }) {
+  const proxyUrl = '/api/proxy';
+  const apiUrl = 'https://api.muapi.ai/api/v1/generate_flux_dev_lora_image';
+  const payload = { prompt, model_id, width, height, num_images };
+  try {
+    if (onLog) onLog('Submitting LoRA image generation task...');
+    const response = await axios.post(proxyUrl, {
+      url: apiUrl,
+      method: 'POST',
+      data: payload,
+      apiKey
+    });
+    if (response.status === 200) {
+      if (onLog) onLog('LoRA image generation task submitted. Request ID: ' + response.data.request_id);
+      return response.data;
+    } else {
+      const errMsg = `Error: ${response.status}, ${response.statusText}`;
+      if (onLog) onLog(errMsg);
+      throw new Error(errMsg);
+    }
+  } catch (error) {
+    let errMsg = 'Error submitting LoRA image generation task: ' + error.message;
+    if (error.response) {
+      errMsg += `\nStatus: ${error.response.status}`;
+      errMsg += `\nResponse data: ${JSON.stringify(error.response.data, null, 2)}`;
+    }
+    if (onLog) onLog(errMsg);
+    throw new Error(errMsg);
+  }
+}
+
+// Map model name/id to endpoint
+// Note: HiDream endpoints are confirmed working, flux_dev has 500 errors
+const modelEndpointMap = {
+  'Flux Dev': 'https://api.muapi.ai/api/v1/flux_dev_image',
+  'flux-dev': 'https://api.muapi.ai/api/v1/flux_dev_image',
+  // HiDream models (confirmed working)
+  'HiDream I1 Fast': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image',
+  'HiDream I1 Dev': 'https://api.muapi.ai/api/v1/hidream_i1_dev_image',
+  'HiDream I1 Full': 'https://api.muapi.ai/api/v1/hidream_i1_full_image',
+  // Flux Kontext model (no width/height required)
+  'Flux Kontext Dev T2I': 'https://api.muapi.ai/api/v1/flux_kontext_dev_text_to_image',
+  // Use working hidream endpoint as fallback since flux_dev is returning 500 errors
+  'Flux Schnell': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Flux LoRA': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Flux Pro v1.1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Flux Pro Ultra v1.1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Seedream-v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Flux Kontext': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Recraft-v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Minimax/Hailuoai': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Google Imagen 3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Google Imagen 4': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Midjourney v7': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'Ideogram v3': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+  'GPT-Image-1': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image', // Using working endpoint
+};
+
+// Models that don't require width/height parameters
+const modelsWithoutDimensions = [
+  'Flux Kontext Dev T2I'
+];
+
+// Generate image for Flux Dev and similar models
+export async function generateImage({ prompt, width, height, num_images, apiKey, modelName, aspectRatio, onLog }) {
+  const proxyUrl = '/api/proxy';
+  const apiUrl = modelEndpointMap[modelName] || modelEndpointMap['Flux Dev'];
+
+  // Create payload based on model requirements
+  let payload = { prompt, num_images };
+
+  // Add aspect ratio for all models
+  if (aspectRatio) {
+    payload.aspect_ratio = aspectRatio;
+  }
+
+  // Only add dimensions if the model requires them
+  if (!modelsWithoutDimensions.includes(modelName)) {
+    payload.width = width;
+    payload.height = height;
+  }
+
+  try {
+    if (onLog) onLog(`Submitting image generation task for model: ${modelName}`);
+    if (onLog) onLog(`Using API endpoint: ${apiUrl}`);
+    if (onLog) onLog(`Payload: ${JSON.stringify(payload, null, 2)}`);
+
+    const response = await axios.post(proxyUrl, {
+      url: apiUrl,
+      method: 'POST',
+      data: payload,
+      apiKey
+    });
+
+    if (response.status === 200) {
+      if (onLog) onLog('Image generation task submitted. Request ID: ' + response.data.request_id);
+      return response.data;
+    } else {
+      const errMsg = `Error: ${response.status}, ${response.statusText}`;
+      if (onLog) onLog(errMsg);
+      throw new Error(errMsg);
+    }
+  } catch (error) {
+    let errMsg = 'Error submitting image generation task: ' + error.message;
+    if (error.response) {
+      errMsg += `\nStatus: ${error.response.status}`;
+      errMsg += `\nStatus Text: ${error.response.statusText}`;
+      errMsg += `\nResponse data: ${JSON.stringify(error.response.data, null, 2)}`;
+    }
+    if (onLog) onLog(errMsg);
+    throw new Error(errMsg);
+  }
+}
+
+// Poll for result by requestId
+export async function pollForResult(requestId, apiKey, onLog) {
+  const proxyUrl = '/api/proxy';
+  const apiUrl = `https://api.muapi.ai/api/v1/predictions/${requestId}/result`;
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < MAX_POLL_TIME) {
+    try {
+      const url = `${proxyUrl}?url=${encodeURIComponent(apiUrl)}&apiKey=${encodeURIComponent(apiKey)}`;
+      const pollResponse = await axios.get(url);
+
+      if (pollResponse.status === 200) {
+        const status = pollResponse.data.status;
+        if (status === 'completed') {
+          if (onLog) onLog('Image generation completed.');
+          return pollResponse.data;
+        } else if (status === 'failed') {
+          const error = pollResponse.data.error || 'Generation failed';
+          if (onLog) onLog('Image generation failed: ' + error);
+          throw new Error(error);
+        } else {
+          if (onLog) onLog('Image generation status: ' + status);
+        }
+      } else {
+        const errMsg = `Error: ${pollResponse.status}, ${pollResponse.statusText}`;
+        if (onLog) onLog(errMsg);
+        throw new Error(errMsg);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
+    } catch (error) {
+      if (error.code === 'ECONNABORTED') {
+        if (onLog) onLog('Polling request timeout, retrying...');
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  const timeoutError = 'Image generation timed out after ' + (MAX_POLL_TIME / 1000) + ' seconds';
+  if (onLog) onLog(timeoutError);
+  throw new Error(timeoutError);
+}
+
