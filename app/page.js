@@ -66,21 +66,7 @@ export const fluxModels = [
 // LoRA models are now fetched dynamically from API
 // This removes hardcoded LoRA IDs and makes the system more flexible
 
-// AI Effects options (updated data)
-export const aiEffects = [
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/ai_animal.webp', name: 'AI Baby Animals' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/ai_hug.webp', name: 'AI Hug' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/catwalk-effect.webp', name: 'AI Baby Catwalk' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/cooking-effect.webp', name: 'AI Cooking Animal' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/dancing-illusion-effect.webp', name: 'AI Dancing Illusion' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/giant-sea-animal-effect.webp', name: 'AI Giant Sea Animal' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/miniature-fantasy-scene.webp', name: 'Miniature Scenes' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/POV-Niche.webp', name: 'POV-Niche' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/pov-history.webp', name: 'POV-History' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/country-animal.webp', name: 'Country Animal' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/country-human-with-beast.webp', name: 'Country Human Beast' },
-  { effect: 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/ai_effects/country-towering.webp', name: 'Country Towering Giant' },
-];
+
 
 
 // Helper: Poll for image result
@@ -115,8 +101,7 @@ export default function VadooAI() {
 	const [customWidth, setCustomWidth] = useState('1024');
 	const [customHeight, setCustomHeight] = useState('1024');
 	const [showLoRAPopup, setShowLoRAPopup] = useState(false);
-	const [showAIEffectsModal, setShowAIEffectsModal] = useState(false);
-	const [selectedAIEffect, setSelectedAIEffect] = useState(aiEffects[0].name);
+
 	const [showStylesModal, setShowStylesModal] = useState(false);
 	const [selectedStyle, setSelectedStyle] = useState('Cinematic');
 	const [numImages, setNumImages] = useState(1); // NEW: state for number of images
@@ -456,51 +441,7 @@ export default function VadooAI() {
   );
 	}
 
-	// AI Effects Modal
-	const AIEffectsModal = ({ isOpen, onClose }) => {
-		if (!isOpen) return null;
-		return (
-			<div className="fixed inset-0 z-50 flex pointer-events-none">
-				<div className="flex-shrink-0 w-80" />
-				<div className="flex-1 flex items-start justify-start pointer-events-auto">
-					<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] max-h-[70vh] overflow-y-auto p-6 relative mt-8 ml-0 animate-fadeInRight dark-scrollbar">
-						<button
-							className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-							onClick={onClose}
-						>
-							<X size={20} />
-						</button>
-						<h2 className="text-lg font-bold text-white mb-6">Select AI Effect</h2>
-						<div className="grid grid-cols-2 gap-3">
-							{aiEffects.map((effect) => (
-								<div
-									key={effect.name}
-									className={`rounded-xl border-2 cursor-pointer transition-all duration-200 hover:transform hover:scale-105 ${
-										selectedAIEffect === effect.name
-											? 'border-purple-500 bg-purple-500/5 shadow-lg shadow-purple-500/20'
-											: 'border-gray-800 bg-gray-900/50 hover:border-gray-600'
-									}`}
-									onClick={() => {
-										if (selectedAIEffect !== effect.name) {
-											setSelectedAIEffect(effect.name);
-										}
-										setShowAIEffectsModal(false);
-									}}
-								>
-									<div className="h-24 w-full relative rounded-t-xl overflow-hidden bg-gray-900 flex items-center justify-center">
-										<img src={effect.effect} alt={effect.name} className="object-cover w-20 h-20 rounded-xl" />
-									</div>
-									<div className="p-2">
-										<h3 className="font-semibold text-sm mb-1 text-white">{effect.name}</h3>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			</div>
-		);
-	}
+
 
 	// Styles options (example data)
 	const aiImageStyles = [
@@ -678,35 +619,25 @@ const stylesTabData = [
 		setShowModelModal(true);
 		setShowAspectRatioPopup(false);
 		setShowLoRAPopup(false);
-		setShowAIEffectsModal(false);
 		setShowStylesModal(false);
 	};
 	const handleOpenAspectRatioPopup = () => {
 		setShowModelModal(false);
 		setShowAspectRatioPopup(true);
 		setShowLoRAPopup(false);
-		setShowAIEffectsModal(false);
 		setShowStylesModal(false);
 	};
 	const handleOpenLoRAPopup = () => {
 		setShowModelModal(false);
 		setShowAspectRatioPopup(false);
 		setShowLoRAPopup(true);
-		setShowAIEffectsModal(false);
 		setShowStylesModal(false);
 	};
-	const handleOpenAIEffectsModal = () => {
-		setShowModelModal(false);
-		setShowAspectRatioPopup(false);
-		setShowLoRAPopup(false);
-		setShowAIEffectsModal(true);
-		setShowStylesModal(false);
-	};
+
 	const handleOpenStylesModal = () => {
 		setShowModelModal(false);
 		setShowAspectRatioPopup(false);
 		setShowLoRAPopup(false);
-		setShowAIEffectsModal(false);
 		setShowStylesModal(true);
 	};
 
@@ -1153,25 +1084,7 @@ async function handleEditImage() {
 		  </svg>
 		</button>
 	  </div>
-	  {/* AI Effects */}
-	  <div className="space-y-3">
-		<label className="text-sm text-gray-400 font-medium">AI Effects</label>
-		<button
-		  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-left text-white hover:bg-gray-700 transition-colors group"
-		  onClick={handleOpenAIEffectsModal}
-		>
-		  <div className="flex items-center justify-between">
-			<div className="flex items-center space-x-3">
-			  {/* White line star SVG icon */}
-			  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="10,2 12.472,7.236 18,7.764 13.5,11.618 14.944,17 10,14.1 5.056,17 6.5,11.618 2,7.764 7.528,7.236 10,2"/></svg>
-			  <span className="font-medium">{selectedAIEffect}</span>
-			</div>
-			<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-gray-400 group-hover:text-white transition-colors transform duration-200" style={{ transform: showAIEffectsModal ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-			  <path d="M10 8L6 4v8l4-4z" />
-			</svg>
-		  </div>
-		</button>
-	  </div>
+
 	</div>
 	{/* Styles Section */}
 	<div className="space-y-3">
@@ -1521,8 +1434,7 @@ async function handleEditImage() {
 			{/* LoRA Popup */}
 			<LoRAPopup isOpen={showLoRAPopup} onClose={() => setShowLoRAPopup(false)} />
 
-			{/* AI Effects Modal */}
-			<AIEffectsModal isOpen={showAIEffectsModal} onClose={() => setShowAIEffectsModal(false)} />
+
 
 			{/* Styles Modal */}
 			<StylesModal isOpen={showStylesModal} onClose={() => setShowStylesModal(false)} selectedStyle={selectedStyle} setSelectedStyle={setSelectedStyle} anchorRef={stylesBtnRef} />
