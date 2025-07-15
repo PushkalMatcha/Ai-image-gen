@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { X, Plus, Slash } from 'lucide-react';
 import { generateImage, pollForResult, generateLoraImage, downloadImage, editImage as editImageAPI } from './lib/muapi';
@@ -63,146 +63,8 @@ export const fluxModels = [
 	},
 ];
 
-export const fluxLoraModels = [
-	{
-		"name": null,
-		"description": null,
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/none.png",
-		"model_id": ""
-	},
-	{
-		"name": "Midjourney V6.1 meets FLUX",
-		"description": "This Lora was trained with 34 Midjourney V6.1 images. Use aidmaMJ6.1 to trigger the Lora.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/99c13c70-da0e-11ef-9691-99c5509aa859.jpg",
-		"model_id": "civitai:119351@317153"
-	},
-	{
-		"name": "Flux Realism",
-		"description": "Photorealistic model for hyper-realistic images.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/b30725e0-da00-11ef-9691-99c5509aa859.jpg",
-		"model_id": "civitai:119352@317153"
-	},
-	{
-		"name": "60s Psychedelic Movie",
-		"description": "Mimics 60s psychedelic movie stills. Trigger: ArsMovieStill, movie still from a 60s psychedelic movie.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/2bee9f10-d7d1-11ef-86d4-957396b21e70.jpg",
-		"model_id": "civitai:119353@317153"
-	},
-	{
-		"name": "Organic Sauce",
-		"description": "Blends charcoal sketches, watercolor, and hand-drawn styles for a non-anime aesthetic.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/793f1780-d778-11ef-b1af-3332a68f86bd.jpg",
-		"model_id": "civitai:119354@317153"
-	},
-	{
-		"name": "Amateur Photography",
-		"description": "Simulates casual iPhone/low-quality camera photos.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/a6bcb8a0-d70c-11ef-8fd6-9bd833a3e0c8.jpg",
-		"model_id": "civitai:119355@317153"
-	},
-	{
-		"name": "Vintage Anime",
-		"description": "Retro anime style from the 1970s-1990s with muted colors and bold outlines.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/23d16660-d6c2-11ef-a2c8-4334694e75d5.jpg",
-		"model_id": "civitai:119356@317153"
-	},
-	{
-		"name": "Retro Anime Flux",
-		"description": "Captures Midjourney-generated retro anime. No trigger word required.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/62377130-d779-11ef-818d-81383a410a43.jpg",
-		"model_id": "civitai:119357@317153"
-	},
-	{
-		"name": "ILLUSTRATION",
-		"description": "Cartoonish/illustration style for artistic fictional looks.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/79bd6fc0-d3c9-11ef-bdec-fb6822ccf241.jpg",
-		"model_id": "civitai:119358@317153"
-	},
-	{
-		"name": "Claymation",
-		"description": "Creates clay animation stills. Trigger: claymation.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/40a86310-d3c5-11ef-bdec-fb6822ccf241.jpg",
-		"model_id": "civitai:119359@317153"
-	},
-	{
-		"name": "Convenience store CCTV",
-		"description": "Trained on 450+ CCTV frames. Trigger: StoreCCTV (strength ≥1.5).",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/ef8f4499-811c-6672-a314-8ee0a1faf72d.jpeg",
-		"model_id": "civitai:119360@317153"
-	},
-	{
-		"name": "80s Fantasy Movie",
-		"description": "Emulates early 80s fantasy movies. Trigger: ArsMovieStill, 80s Fantasy Movie Still.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/78017490-d49d-11ef-a125-37bcaa0f7ea4.jpg",
-		"model_id": "civitai:119361@317153"
-	},
-	{
-		"name": "LET ME SEE YOUR GRILLZ FLUX",
-		"description": "Trained on 'iced out' jewelry. Trigger: GR!LLZ, SMILE (strength 0.7-0.9).",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/3de68800-d546-11ef-b428-6f2a79e2fb35.jpg",
-		"model_id": "civitai:119362@317153"
-	},
-	{
-		"name": "Boss Battle",
-		"description": "Inspired by Dark Souls, Elden Ring, and COD Zombies.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/8e5def60-7247-11ef-b942-c3ed7e429df5.mp4",
-		"model_id": "civitai:119363@317153"
-	},
-	{
-		"name": "Boring Reality",
-		"description": "No description provided.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/d1c14f60-7efc-11ef-80c5-5554da8c130d.mp4",
-		"model_id": "civitai:119364@317153"
-	},
-	{
-		"name": "1999 Camera Style",
-		"description": "Emulates the Olympus D-450 Zoom (1999) for nostalgic, retro visuals.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/cad3f800-db5f-11ef-84be-7d58ca7aafd5.jpg",
-		"model_id": "civitai:119365@317153"
-	},
-	{
-		"name": "Vintage Photo",
-		"description": "Recreates old photos with washed-out colors or B&W.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/bbad3780-716d-11ef-9671-67bd79b65756.mp4",
-		"model_id": "civitai:119366@317153"
-	},
-	{
-		"name": "Dark Comic",
-		"description": "Combines graphic novels and horror aesthetics.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/0dbb57c0-72c5-11ef-a7f6-43bf4b58bf5d.mp4",
-		"model_id": "civitai:119367@317153"
-	},
-	{
-		"name": "Hard Edge Pixel Art",
-		"description": "Pixel art style. Trigger: pixel art.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/ecce8b70-7131-11ef-8d4f-a3a50b8763ad.mp4",
-		"model_id": "civitai:119368@317153"
-	},
-	{
-		"name": "VHS Style",
-		"description": "Retro 90s VHS effect.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/ac8d91f0-da2c-11ef-8b06-63fc00fa1e69.jpg",
-		"model_id": "civitai:119369@317153"
-	},
-	{
-		"name": "3D Render",
-		"description": "High-quality 3D renderings.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/fbcd02f0-70f5-11ef-91b1-1358266f04dc.mp4",
-		"model_id": "civitai:119370@317153"
-	},
-	{
-		"name": "Moody Photo Style",
-		"description": "Analog 35mm film for moody realism.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/6d6e6940-718b-11ef-b7b6-85558717b410.mp4",
-		"model_id": "civitai:119371@317153"
-	},
-	{
-		"name": "Cyberpunk Anime",
-		"description": "Cyberpunk anime aesthetics.",
-		"image_url": "https://d3adwkbyhxyrtq.cloudfront.net/fluxlora/eb6cff40-70e7-11ef-a9ab-fb8d2d74ead2.mp4",
-		"model_id": "civitai:119372@317153"
-	}
-];
+// LoRA models are now fetched dynamically from API
+// This removes hardcoded LoRA IDs and makes the system more flexible
 
 // AI Effects options (updated data)
 export const aiEffects = [
@@ -259,6 +121,7 @@ export default function VadooAI() {
 	const [selectedStyle, setSelectedStyle] = useState('Cinematic');
 	const [numImages, setNumImages] = useState(1); // NEW: state for number of images
 	const [loading, setLoading] = useState(false);
+	const [generationStatus, setGenerationStatus] = useState('');
 	const [generatedImages, setGeneratedImages] = useState([]);
 	const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 	const [apiKeyInput, setApiKeyInput] = useState('');
@@ -274,6 +137,54 @@ export default function VadooAI() {
 	const [selectedLoRAModelId, setSelectedLoRAModelId] = useState("");
 	// Add state for selected LoRA model name
 	const [selectedLoRAName, setSelectedLoRAName] = useState("");
+	// Dynamic LoRA models state
+	const [fluxLoraModels, setFluxLoraModels] = useState([]);
+	const [isLoadingLoraModels, setIsLoadingLoraModels] = useState(true);
+
+	// Fetch LoRA models dynamically on component mount
+	useEffect(() => {
+		const fetchLoraModels = async () => {
+			try {
+				setIsLoadingLoraModels(true);
+				const response = await fetch('/api/flux-lora-models');
+				const data = await response.json();
+
+				if (response.ok && data.models) {
+					setFluxLoraModels(data.models);
+
+					// Clear any old cached LoRA selection to force user to select from new dynamic list
+					// This prevents old SDXL LoRA IDs from being used
+					if (selectedLoRAModelId && !data.models.some(model => model.model_id === selectedLoRAModelId)) {
+						console.log('Clearing old LoRA selection:', selectedLoRAModelId);
+						setSelectedLoRAModelId("");
+						setSelectedLoRAName("");
+					}
+				} else {
+					console.error('Failed to fetch LoRA models:', data.error);
+					// Fallback to empty array with "None" option
+					setFluxLoraModels([{
+						name: null,
+						description: null,
+						image_url: "https://d3adwkbyhxyrtq.cloudfront.net/webassets/none.png",
+						model_id: ""
+					}]);
+				}
+			} catch (error) {
+				console.error('Error fetching LoRA models:', error);
+				// Fallback to empty array with "None" option
+				setFluxLoraModels([{
+					name: null,
+					description: null,
+					image_url: "https://d3adwkbyhxyrtq.cloudfront.net/webassets/none.png",
+					model_id: ""
+				}]);
+			} finally {
+				setIsLoadingLoraModels(false);
+			}
+		};
+
+		fetchLoraModels();
+	}, []); // Run once on component mount to fetch LoRA models and clear old selections
 
 	// AspectRatioPopup component (inline, replaces old modal)
 	function AspectRatioPopup({ isOpen, onClose, selectedRatio, setSelectedRatio, customWidth, setCustomWidth, customHeight, setCustomHeight, anchorRef }) {
@@ -478,12 +389,20 @@ export default function VadooAI() {
 						<div className="w-full h-full bg-gray-700 rounded-lg items-center justify-center text-gray-400 text-xs flex">IMG</div>
 					  )}
 					</div>
-					<div className="text-white font-medium text-sm">{option.name}</div>
+					<div className="flex-1">
+					  <div className="text-white font-medium text-sm">{option.name}</div>
+					  {option.baseModel && (
+						<div className="text-xs text-green-400 mt-1">✓ {option.baseModel}</div>
+					  )}
+					</div>
 				  </button>
 				);
 			  })
 			) : !search.trim() ? (
-			  fluxLoraModels.map((option, idx) => (
+			  isLoadingLoraModels ? (
+				<div className="text-gray-400 text-center py-4">Loading LoRA models...</div>
+			  ) : fluxLoraModels.length > 0 ? (
+				fluxLoraModels.map((option, idx) => (
 				<button
 				  key={option.name || idx}
 				  onClick={() => {
@@ -526,6 +445,9 @@ export default function VadooAI() {
 				  </div>
 				</button>
 			  ))
+			  ) : (
+				<div className="text-gray-400 text-center py-4">No LoRA models available</div>
+			  )
 			) : null}
 		  </div>
 		</div>
@@ -798,6 +720,7 @@ async function handleGenerate() {
 		return;
 	}
 	setLoading(true);
+	setGenerationStatus('');
 	setGeneratedImages([]);
 	try {
 		// Aspect ratio logic
@@ -836,6 +759,7 @@ async function handleGenerate() {
 		if (!selectedLoRAModelId) {
 			setLogMessages(logs => [...logs, 'Please select a LoRA model first.']);
 			setLoading(false);
+			setGenerationStatus('');
 			return;
 		}
 		// Use LoRA generation
@@ -870,7 +794,14 @@ async function handleGenerate() {
 	const requestId = data.request_id;
 	let result = null;
 	try {
-		result = await pollForResult(requestId, userApiKey, (msg) => setLogMessages(logs => [...logs, msg]));
+		result = await pollForResult(requestId, userApiKey, (msg) => {
+			setLogMessages(logs => [...logs, msg]);
+			// Update generation status for user feedback
+			if (msg.includes('status:')) {
+				const status = msg.split('status:')[1].trim();
+				setGenerationStatus(`Status: ${status}`);
+			}
+		});
 		setLogMessages(logs => [...logs, '[Result] ' + JSON.stringify(result, null, 2)]);
 	} catch (err) {
 		setLogMessages(logs => [...logs, '[Polling Error] ' + err.message]);
@@ -895,6 +826,7 @@ async function handleGenerate() {
 	setLogMessages(logs => [...logs, errorMessage]);
 } finally {
 	setLoading(false);
+	setGenerationStatus('');
 }
 }
 
@@ -906,6 +838,7 @@ async function handleEditImage() {
 		return;
 	}
 	setLoading(true);
+	setGenerationStatus('');
 	setGeneratedImages([]);
 	try {
 		// Aspect ratio logic
@@ -959,6 +892,11 @@ async function handleEditImage() {
 			result = await pollForResult(requestId, userApiKey, (msg) => {
 				console.log('[onLog callback]', msg);
 				setLogMessages(logs => [...logs, msg]);
+				// Update generation status for user feedback
+				if (msg.includes('status:')) {
+					const status = msg.split('status:')[1].trim();
+					setGenerationStatus(`Status: ${status}`);
+				}
 			});
 			setLogMessages(logs => [...logs, '[Result] ' + JSON.stringify(result, null, 2)]);
 		} catch (err) {
@@ -985,6 +923,7 @@ async function handleEditImage() {
 		setLogMessages(logs => [...logs, errorMessage]);
 	} finally {
 		setLoading(false);
+		setGenerationStatus('');
 	}
 }
 
@@ -1333,7 +1272,25 @@ async function handleEditImage() {
 		<div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-blue-600/5"></div>
 		<div className="text-center text-gray-500 relative z-10 w-full">
 		  {loading ? (
-			<div className="text-lg text-white">Generating image...</div>
+			<div className="flex flex-col items-center justify-center space-y-4">
+			  {/* Animated spinner */}
+			  <div className="relative">
+				<div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+				<div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-blue-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+			  </div>
+			  {/* Loading text */}
+			  <div className="text-lg text-white font-medium">Generating image...</div>
+			  {/* Progress indicator with status */}
+			  <div className="text-sm text-gray-400">
+				{generationStatus || 'This may take a few moments'}
+			  </div>
+			  {/* Animated dots */}
+			  <div className="flex space-x-1">
+				<div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+				<div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+				<div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+			  </div>
+			</div>
 		  ) : generatedImages.length > 0 ? (
 			<div className="flex flex-wrap justify-center gap-6">
 			  {generatedImages.map((url, i) => (
@@ -1456,11 +1413,17 @@ async function handleEditImage() {
 		  />
 		  <button
 			type="button"
-			className="flex items-center justify-center gap-2 bg-gray-500 text-white hover:bg-gray-600 px-2 py-2 rounded-full text-sm"
+			className={`flex items-center justify-center gap-2 ${loading ? 'bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-2 rounded-full text-sm transition-colors duration-200`}
 			onClick={activeTab === 'edit' ? handleEditImage : handleGenerate}
 			disabled={loading || !prompt.trim() || (activeTab === 'edit' && !editImage)}
 		  >
-			<svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M1 1.91L1.78 1.5L15 7.44899V8.3999L1.78 14.33L1 13.91L2.58311 8L1 1.91ZM3.6118 8.5L2.33037 13.1295L13.5 7.8999L2.33037 2.83859L3.6118 7.43874L9 7.5V8.5H3.6118Z"></path></svg>
+			{loading ? (
+			  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+				<path d="M21 12a9 9 0 11-6.219-8.56" />
+			  </svg>
+			) : (
+			  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M1 1.91L1.78 1.5L15 7.44899V8.3999L1.78 14.33L1 13.91L2.58311 8L1 1.91ZM3.6118 8.5L2.33037 13.1295L13.5 7.8999L2.33037 2.83859L3.6118 7.43874L9 7.5V8.5H3.6118Z"></path></svg>
+			)}
 		  </button>
 		</div>
 	  </div>

@@ -64,9 +64,25 @@ export async function POST(req) {
     console.log('Response status:', response.status);
     console.log('Response data:', JSON.stringify(response.data, null, 2));
 
-    return new Response(JSON.stringify(response.data), {
+    // Add debug info to response for browser console
+    const responseWithDebug = {
+      ...response.data,
+      _debug: {
+        requestPayload: data,
+        requestUrl: url,
+        requestMethod: method,
+        timestamp: new Date().toISOString(),
+        note: "Debug info - check browser console and server logs"
+      }
+    };
+
+    return new Response(JSON.stringify(responseWithDebug), {
       status: response.status,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Payload': JSON.stringify(data),
+        'X-Debug-URL': url
+      }
     });
   } catch (error) {
     console.error('Proxy POST error:', {
@@ -142,6 +158,10 @@ export async function GET(req) {
     console.log('Making GET request to:', url);
     const response = await makeRequest(config);
     console.log('Response status:', response.status);
+    // Only log response data for non-polling requests to reduce noise
+    if (!url.includes('/predictions/') || !url.includes('/result')) {
+      console.log('Response data:', JSON.stringify(response.data, null, 2));
+    }
 
     return new Response(JSON.stringify(response.data), {
       status: response.status,

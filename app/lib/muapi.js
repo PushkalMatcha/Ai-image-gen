@@ -30,6 +30,12 @@ export async function generateLoraImage({ prompt, model_id, width, height, num_i
   if (aspectRatio) {
     payload.aspect_ratio = aspectRatio;
   }
+
+  // Log payload to browser console for debugging
+  console.log('🚀 LORA REQUEST PAYLOAD:', JSON.stringify(payload, null, 2));
+  console.log('🔗 API URL:', apiUrl);
+  console.log('🔑 API Key (first 8 chars):', apiKey.substring(0, 8) + '...');
+
   try {
     if (onLog) onLog('Submitting LoRA image generation task...');
     const response = await axios.post(proxyUrl, {
@@ -106,6 +112,12 @@ export async function generateImage({ prompt, width, height, num_images, apiKey,
     payload.height = height;
   }
 
+  // Log payload to browser console for debugging
+  console.log('🚀 REGULAR REQUEST PAYLOAD:', JSON.stringify(payload, null, 2));
+  console.log('🔗 API URL:', apiUrl);
+  console.log('🔑 API Key (first 8 chars):', apiKey.substring(0, 8) + '...');
+  console.log('📋 Model Name:', modelName);
+
   try {
     if (onLog) onLog(`Submitting image generation task for model: ${modelName}`);
     if (onLog) onLog(`Using API endpoint: ${apiUrl}`);
@@ -158,8 +170,12 @@ export async function pollForResult(requestId, apiKey, onLog) {
           const error = pollResponse.data.error || 'Generation failed';
           if (onLog) onLog('Image generation failed: ' + error);
           throw new Error(error);
-        } else {
+        } else if (status === 'pending' || status === 'processing' || status === 'starting') {
+          // These are valid processing states - continue polling
           if (onLog) onLog('Image generation status: ' + status);
+        } else {
+          // Unknown status - log it but continue polling
+          if (onLog) onLog('Unknown status: ' + status + ' - continuing to poll...');
         }
       } else {
         const errMsg = `Error: ${pollResponse.status}, ${pollResponse.statusText}`;

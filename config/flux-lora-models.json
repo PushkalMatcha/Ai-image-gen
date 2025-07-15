@@ -1,0 +1,63 @@
+{
+  "models": [
+    {
+      "name": null,
+      "description": null,
+      "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/none.png",
+      "model_id": "",
+      "verified": true,
+      "baseModel": "None"
+    },
+    {
+      "name": "Hands Fix for Flux",
+      "description": "Improves hand generation quality in Flux models",
+      "image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/3889d3d3-3af3-47b5-aa5c-0c9f699ba553/width=1024/27706512.jpeg",
+      "model_id": "civitai:200255@804967",
+      "verified": true,
+      "baseModel": "Flux.1 D"
+    },
+    {
+      "name": "Mythic Fantasy Styles",
+      "description": "Fantasy art style with dramatic lighting and mythical elements",
+      "image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/7f8cb19b-8a78-4486-998c-6d841437e72a/width=1664/85330411.jpeg",
+      "model_id": "civitai:599757@1957771",
+      "verified": true,
+      "baseModel": "Flux.1 D"
+    },
+    {
+      "name": "Dramatic Lighting Style",
+      "description": "Adds cinematic and dramatic lighting effects to images",
+      "image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/d6940e26-7fa0-46d7-974c-0faabf1d4c4d/width=1216/51415635.jpeg",
+      "model_id": "civitai:340248@1278791",
+      "verified": true,
+      "baseModel": "Flux.1 D"
+    },
+    {
+      "name": "Freckled Portrait Style",
+      "description": "Natural portraits with freckles and realistic skin textures",
+      "image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/c15b364d-873f-42c8-80a1-263350d97660/width=512/87830312.jpeg",
+      "model_id": "civitai:1768322@2001239",
+      "verified": true,
+      "baseModel": "Flux.1 D"
+    },
+    {
+      "name": "Anime Style Flux",
+      "description": "Anime-style character generation for Flux models",
+      "image_url": "https://d3adwkbyhxyrtq.cloudfront.net/webassets/none.png",
+      "model_id": "civitai:1771835@2005301",
+      "verified": true,
+      "baseModel": "Flux.1 D"
+    }
+  ],
+  "metadata": {
+    "lastUpdated": "2025-07-14T17:20:00.000Z",
+    "version": "1.0.0",
+    "description": "Curated list of Flux Dev compatible LoRA models",
+    "notes": [
+      "All models have been verified to work with Flux Dev",
+      "To add new models, verify they are Flux.1 D compatible first",
+      "Images should be optimized for web display",
+      "Model IDs must follow civitai:modelId@versionId format"
+    ]
+  }
+}
