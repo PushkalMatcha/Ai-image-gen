@@ -61,6 +61,15 @@ export const fluxModels = [
 		credits: 6,
 		num: 1
 	},
+	{
+		id: "flux-kontext-dev-i2i",
+		name: "Flux Kontext Dev I2I",
+		image: "https://d3adwkbyhxyrtq.cloudfront.net/ai-images/186/411267126627/fd2e347d-e308-45c5-abfe-c5e9ac49b99c.jpg",
+		description: "Flux Kontext development model for image-to-image editing (auto dimensions)",
+		duration: 12,
+		credits: 6,
+		num: 1
+	},
 ];
 
 // LoRA models are now fetched dynamically from API
@@ -91,7 +100,7 @@ export const fluxModels = [
 export default function VadooAI() {
 	const [prompt, setPrompt] = useState('');
 	const [activeTab, setActiveTab] = useState('generate');
-	const [selectedModel, setSelectedModel] = useState('HiDream I1 Fast');
+	const [selectedModel, setSelectedModel] = useState('Flux Dev');
 	const [aspectRatio, setAspectRatio] = useState('1:1');
 	const [enhancePrompt, setEnhancePrompt] = useState(true);
 	const [showStyles, setShowStyles] = useState(false);
@@ -115,8 +124,7 @@ export default function VadooAI() {
 	const [editPrompt, setEditPrompt] = useState('');
 	const [showImageUrlModal, setShowImageUrlModal] = useState(false);
 	const [imageUrlInput, setImageUrlInput] = useState('');
-	const aspectRatioBtnRef = React.useRef(null);
-	const stylesBtnRef = React.useRef(null); // NEW: ref for Styles button
+
 
 	// Add state for selected LoRA model ID
 	const [selectedLoRAModelId, setSelectedLoRAModelId] = useState("");
@@ -171,8 +179,15 @@ export default function VadooAI() {
 		fetchLoraModels();
 	}, []); // Run once on component mount to fetch LoRA models and clear old selections
 
+	// Auto-switch to Flux Kontext Dev I2I when switching to edit tab
+	useEffect(() => {
+		if (activeTab === 'edit') {
+			setSelectedModel('Flux Kontext Dev I2I');
+		}
+	}, [activeTab]);
+
 	// AspectRatioPopup component (inline, replaces old modal)
-	function AspectRatioPopup({ isOpen, onClose, selectedRatio, setSelectedRatio, customWidth, setCustomWidth, customHeight, setCustomHeight, anchorRef }) {
+	function AspectRatioPopup({ isOpen, onClose, aspectRatio, setAspectRatio, customWidth, setCustomWidth, customHeight, setCustomHeight }) {
 		// Switch SVG shapes for 1:1 and 3:4
 		const aspectRatios = [
 			{ ratio: '1:1', shape: 'portrait', width: 32, height: 40 }, // was square, now portrait
@@ -181,38 +196,14 @@ export default function VadooAI() {
 			{ ratio: '16:9', shape: 'landscape', width: 40, height: 24 },
 			{ ratio: '4:3', shape: 'square', width: 40, height: 40 }, // switched with 3:4, remove rotate
 		];
-		const [popupStyle, setPopupStyle] = useState({});
-		React.useLayoutEffect(() => {
-			if (typeof window === 'undefined') return;
-			function updatePopupPosition() {
-				if (isOpen && anchorRef && anchorRef.current) {
-					const rect = anchorRef.current.getBoundingClientRect();
-					const popupWidth = 420; // match w-[420px]
-					const margin = 16;
-					let left = rect.right + margin;
-					let top = rect.top + window.scrollY - 100; // Move up by 100px
-					// Flip to left if not enough space
-					if (left + popupWidth > window.innerWidth) {
-						left = rect.left - popupWidth - margin;
-					}
-					// Ensure popup is not off the top of viewport
-					if (top < 24) top = 24;
-					setPopupStyle({
-						position: 'fixed',
-						top,
-						left,
-						zIndex: 100,
-					});
-				}
-			}
-			updatePopupPosition();
-			window.addEventListener('resize', updatePopupPosition);
-			return () => window.removeEventListener('resize', updatePopupPosition);
-		}, [isOpen, anchorRef]);
+
 		if (!isOpen) return null;
 		return (
-			<div style={popupStyle} className="pointer-events-auto">
-				<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] p-6 relative animate-fadeInRight dark-scrollbar">
+			<div className="fixed inset-0 z-50 flex pointer-events-none">
+				{/* Sidebar spacer to ensure popup appears to the right of sidebar */}
+				<div className="flex-shrink-0 w-80" />
+				<div className="flex-1 flex items-start justify-start pointer-events-auto">
+					<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] p-6 relative mt-8 ml-4 animate-fadeInRight dark-scrollbar">
 					{/* Header */}
 					<div className="flex items-center justify-between mb-6">
 						<h2 className="text-white text-lg font-medium">Aspect Ratio</h2>
@@ -281,8 +272,9 @@ export default function VadooAI() {
 					</div>
 				</div>
 			</div>
-		);
-	}
+		</div>
+	);
+}
 
 	// Aspect ratio SVGs for sidebar (compressed, match grid)
 	const aspectRatioSvgs = {
@@ -293,7 +285,7 @@ export default function VadooAI() {
 		'4:3': { width: 25, height: 25, rotate: false },
 	};
 
-	// LoRA Popup Component (now with search)
+	// LoRA Popup Component (search only)
 	const LoRAPopup = ({ isOpen, onClose }) => {
   const [search, setSearch] = React.useState("");
   const [results, setResults] = React.useState([]);
@@ -326,7 +318,7 @@ export default function VadooAI() {
 	<div className="fixed inset-0 z-50 flex pointer-events-none">
 	  <div className="flex-shrink-0 w-80" />
 	  <div className="flex-1 flex items-start justify-start pointer-events-auto">
-		<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] max-h-[70vh] overflow-y-auto p-6 relative mt-8 ml-0 animate-fadeInRight dark-scrollbar-lora">
+		<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] max-h-[70vh] overflow-y-auto p-6 relative mt-8 ml-4 animate-fadeInRight dark-scrollbar-lora">
 		  <button
 			className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
 			onClick={onClose}
@@ -336,7 +328,7 @@ export default function VadooAI() {
 		  <h2 className="text-lg font-medium text-white mb-4">LoRA</h2>
 		  <input
 			className="w-full mb-4 p-2 rounded bg-gray-800 border border-gray-700 text-white"
-			placeholder="Search Civitai or browse presets..."
+			placeholder="Search Civitai for LoRA models..."
 			value={search}
 			onChange={e => setSearch(e.target.value)}
 			autoFocus
@@ -387,69 +379,53 @@ export default function VadooAI() {
 				  </button>
 				);
 			  })
-			) : !search.trim() ? (
-			  isLoadingLoraModels ? (
-				<div className="text-gray-400 text-center py-4">Loading LoRA models...</div>
-			  ) : fluxLoraModels.length > 0 ? (
-				fluxLoraModels.map((option, idx) => (
-				<button
-				  key={option.name || idx}
-				  onClick={() => {
-					setSelectedLoRAModelId(option.model_id || "");
-					setSelectedLoRAName(option.name || "None");
-					// Automatically set model to Flux LoRA when a LoRA is selected (except for "None")
-					if (option.model_id && option.name !== "None") {
-					  setSelectedModel('Flux LoRA');
-					  // Log the automatic model change
-					  setLogMessages(logs => [...logs, `[LoRA Selected] ${option.name} - Model automatically set to Flux LoRA`]);
-					}
-					onClose();
-				  }}
-				  className={`w-full bg-gray-800 rounded-lg p-4 flex items-start space-x-4 text-left transition-all ${
-					selectedLoRAModelId === (option.model_id || "")
-					  ? 'border-2 border-purple-500 shadow-lg shadow-purple-500/20'
-					  : 'border border-gray-700 hover:border-gray-500'
-				  }`}
-				>
-				  <div className="flex-shrink-0 w-16 h-16 bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
-					{option.image_url && !option.image_url.endsWith('.mp4') ? (
-					  <img
-						src={option.image_url}
-						alt={option.name || 'None'}
-						className="w-full h-full object-cover rounded-lg"
-						onError={e => { e.target.onerror = null; e.target.src = 'https://d3adwkbyhxyrtq.cloudfront.net/webassets/none.png'; }}
-					  />
-					) : option.image_url && option.image_url.endsWith('.mp4') ? (
-					  <video src={option.image_url} className="w-full h-full object-cover rounded-lg" autoPlay loop muted playsInline />
-					) : (
-					  <div className="w-full h-full bg-gray-700 rounded-lg items-center justify-center text-gray-400 text-xs flex">IMG</div>
-					)}
-				  </div>
-
-
-
-
-
-				  
-				  <div className="flex-1 min-w-0">
-					<h3 className="text-white font-medium text-sm mb-1">{option.name || 'None'}</h3>
-					<p className="text-gray-400 text-xs leading-relaxed">{option.description || 'Select None if you do not want to use LoRA'}</p>
-					{option.model_id && (
-					  <div className="text-xs text-gray-500 mt-1">ID: {option.model_id}</div>
-					)}
-				  </div>
-				</button>
-			  ))
-			  ) : (
-				<div className="text-gray-400 text-center py-4">No LoRA models available</div>
-			  )
-			) : null}
+			) : search.trim() && results.length === 0 ? (
+			  <div className="text-gray-400 text-center py-8">
+				<div className="text-lg mb-2">No results found</div>
+				<div className="text-sm">Try different keywords or check spelling</div>
+			  </div>
+			) : (
+			  <div className="text-gray-400 text-center py-8">
+				<div className="text-lg mb-2">Search for LoRA models</div>
+				<div className="text-sm">Enter keywords to find LoRA models from Civitai</div>
+			  </div>
+			)}
 		  </div>
 		</div>
 	  </div>
 	</div>
   );
-	}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -527,36 +503,9 @@ const stylesTabData = [
 	}
 ];
 
-	const StylesModal = ({ isOpen, onClose, selectedStyle, setSelectedStyle, anchorRef }) => {
+	const StylesModal = ({ isOpen, onClose, selectedStyle, setSelectedStyle }) => {
   const [activeTab, setActiveTab] = useState('Styles');
-  const [popupStyle, setPopupStyle] = useState({});
-  React.useLayoutEffect(() => {
-	if (typeof window === 'undefined') return;
-	function updatePopupPosition() {
-	  if (isOpen && anchorRef && anchorRef.current) {
-		const rect = anchorRef.current.getBoundingClientRect();
-		const popupWidth = 420; // match w-[420px]
-		const margin = 16;
-		let left = rect.right + margin;
-		let top = rect.top + window.scrollY - 400; // Move up by 400px
-		// Flip to left if not enough space
-		if (left + popupWidth > window.innerWidth) {
-		  left = rect.left - popupWidth - margin;
-		}
-		// Ensure popup is not off the top of viewport
-		if (top < 24) top = 24;
-		setPopupStyle({
-		  position: 'fixed',
-		  top,
-		  left,
-		  zIndex: 1000,
-		});
-	  }
-	}
-	updatePopupPosition();
-	window.addEventListener('resize', updatePopupPosition);
-	return () => window.removeEventListener('resize', updatePopupPosition);
-  }, [isOpen, anchorRef]);
+
   if (!isOpen) return null;
   const tab = stylesTabData.find(t => t.key === activeTab);
   const isLightingTab = activeTab === 'Lighting';
@@ -565,7 +514,7 @@ const stylesTabData = [
 	<div className="fixed inset-0 z-50 flex pointer-events-none">
 	  <div className="flex-shrink-0 w-80" />
 	  <div className="flex-1 flex items-start justify-start pointer-events-auto">
-		<div style={popupStyle} className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] max-h-[70vh] overflow-y-auto p-6 relative mt-8 ml-0 animate-fadeInRight dark-scrollbar">
+		<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[420px] max-w-[95vw] max-h-[70vh] overflow-y-auto p-6 relative mt-8 ml-4 animate-fadeInRight dark-scrollbar">
 		  <div className="flex items-center mb-3">
 			{stylesTabData.map(t => (
 			  <button
@@ -765,7 +714,6 @@ async function handleGenerate() {
 			height,
 			num_images: numImages || 1,
 			apiKey: userApiKey,
-			aspectRatio: aspectRatio === 'custom' ? `${customWidth}:${customHeight}` : aspectRatio,
 			onLog: (msg) => {
 				console.log('[onLog callback]', msg);
 				setLogMessages(logs => [...logs, msg]);
@@ -967,27 +915,30 @@ async function handleEditImage() {
 			{/* Model Selection Modal */}
 			{showModelModal && (
 				<div className="fixed inset-0 z-50 flex pointer-events-none">
-					{/* Sidebar overlay for click-outside (optional, can be removed if not needed) */}
+					{/* Sidebar spacer to ensure popup appears to the right of sidebar */}
 					<div className="flex-shrink-0 w-80" />
 					<div className="flex-1 flex items-start justify-start pointer-events-auto">
-						<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[800px] max-w-[70vw] max-h-[70vh] overflow-y-auto p-6 relative mt-8 ml-0 animate-fadeInRight dark-scrollbar">
+						<div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl w-[900px] max-w-[85vw] max-h-[80vh] overflow-y-auto p-8 relative mt-8 ml-4 animate-fadeInRight dark-scrollbar">
 							<button
-								className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+								className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors p-2 rounded-xl hover:bg-white/10"
 								onClick={() => setShowModelModal(false)}
 							>
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 									<path d="M18 6L6 18M6 6l12 12"/>
 								</svg>
 							</button>
-							<h2 className="text-2xl font-bold text-white mb-8">Select Model</h2>
-							<div className="grid grid-cols-3 gap-5">
-								{fluxModels.map((model) => (
+							<div className="mb-8">
+							  <h2 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Select Model</h2>
+							  <p className="text-slate-400">Choose the AI model that best fits your creative vision</p>
+							</div>
+							<div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+								{fluxModels.filter(model => model.name !== 'Flux Kontext Dev I2I').map((model) => (
 									<div
 										key={model.id}
-										className={`rounded-xl border-2 cursor-pointer transition-all duration-200 hover:transform hover:scale-105 ${
-											selectedModel === model.name 
-												? 'border-purple-500 bg-purple-500/5 shadow-lg shadow-purple-500/20' 
-												: 'border-gray-800 bg-gray-900/50 hover:border-gray-600'
+										className={`rounded-2xl border-2 cursor-pointer transition-all duration-300 group ${
+											selectedModel === model.name
+												? 'border-purple-400 bg-purple-500/10 shadow-xl shadow-purple-500/25'
+												: 'border-white/20 bg-white/5 hover:border-purple-400 hover:bg-white/10'
 										}`}
 										onClick={() => {
 											if (selectedModel !== model.name) {
@@ -996,14 +947,20 @@ async function handleEditImage() {
 											setShowModelModal(false);
 										}}
 									>
-										<div className="h-32 w-full relative rounded-t-xl overflow-hidden bg-gray-900">
-											<img src={model.image} alt={model.name} className="object-cover w-full h-full rounded-t-xl" />
-											<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+										<div className="h-40 w-full relative rounded-t-2xl overflow-hidden">
+											<img src={model.image} alt={model.name} className="object-cover w-full h-full" />
+											<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+											{selectedModel === model.name && (
+											  <div className="absolute top-3 right-3 bg-purple-500 text-white p-2 rounded-full shadow-lg">
+												<svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+												  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+												</svg>
+											  </div>
+											)}
 										</div>
-										<div className="p-3">
-											<h3 className="font-semibold text-base mb-1 text-white">{model.name}</h3>
-											<p className="text-xs text-gray-400 mb-3 min-h-[32px] leading-relaxed">{model.description}</p>
-
+										<div className="p-4">
+											<h3 className="font-bold text-lg mb-2 text-white">{model.name}</h3>
+											<p className="text-sm text-slate-400 leading-relaxed">{model.description}</p>
 										</div>
 									</div>
 								))}
@@ -1015,172 +972,269 @@ async function handleEditImage() {
 
 			{/* API Key Modal */}
 	{showApiKeyModal && (
-	  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-		<div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-sm shadow-2xl">
-		  <h2 className="text-lg font-semibold text-white mb-4">Enter your API Key</h2>
+	  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeInScale">
+		<div className="glass-strong border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl animate-fadeInUp">
+		  <div className="text-center mb-6">
+			<div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30 flex items-center justify-center">
+			  <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+			  </svg>
+			</div>
+			<h2 className="text-2xl font-bold text-white mb-2">Enter API Key</h2>
+			<p className="text-slate-400">Secure access to AI image generation</p>
+		  </div>
+
 		  <input
 			type="password"
-			className="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white mb-4"
-			placeholder="API Key"
+			className="w-full p-4 rounded-xl glass border border-white/20 text-white mb-4 placeholder-slate-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+			placeholder="Enter your API key..."
 			value={apiKeyInput}
 			onChange={e => setApiKeyInput(e.target.value)}
+			onKeyDown={(e) => {
+			  if (e.key === 'Enter' && apiKeyInput.trim()) {
+				setUserApiKey(apiKeyInput);
+				setShowApiKeyModal(false);
+			  }
+			}}
 		  />
-		  <p className="text-sm text-gray-400 mb-4">
-			Don't have one?{' '}
+
+		  <div className="glass border border-white/10 rounded-xl p-4 mb-6">
+			<p className="text-sm text-slate-300 mb-2 flex items-center">
+			  <svg className="w-4 h-4 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+			  </svg>
+			  Don't have an API key?
+			</p>
 			<a
 			  href="https://muapi.ai/"
 			  target="_blank"
 			  rel="noopener noreferrer"
-			  className="text-purple-400 hover:text-purple-300 underline"
+			  className="text-purple-400 hover:text-purple-300 underline text-sm font-medium"
 			>
-			  Get it from https://muapi.ai/
+			  Get it from https://muapi.ai/ →
 			</a>
-		  </p>
-		  <div className="flex justify-end gap-2">
+		  </div>
+
+		  <div className="flex gap-3">
 			<button
-			  className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600"
+			  className="flex-1 px-6 py-3 rounded-xl glass border border-white/20 text-white hover:bg-white/10 transition-all font-medium"
 			  onClick={() => setShowApiKeyModal(false)}
-			>Cancel</button>
+			>
+			  Cancel
+			</button>
 			<button
-			  className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700"
+			  className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 transition-all font-semibold shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 			  onClick={() => {
 				setUserApiKey(apiKeyInput);
 				setShowApiKeyModal(false);
 			  }}
 			  disabled={!apiKeyInput.trim()}
-			>Submit</button>
+			>
+			  Continue
+			</button>
 		  </div>
 		</div>
 	  </div>
 	)}
 
-			<div className="min-h-screen bg-gray-900/50 text-white flex">
+			<div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white flex relative overflow-hidden">
+				{/* Background Effects */}
+				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent"></div>
+				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
+
 				{/* Sidebar - scrollable */}
-				<div className="w-80 bg-gray-900/50 p-6 space-y-6 border-r border-gray-800 min-h-screen max-h-screen overflow-y-auto backdrop-blur-sm sidebar-scrollbar">
+				<div className="w-80 glass-strong p-6 space-y-6 border-r border-white/10 min-h-screen max-h-screen overflow-y-auto overflow-x-hidden sidebar-scrollbar relative z-10">
 					{/* Sidebar Header */}
-	<div className="flex items-center space-x-3">
-	  <img
-		src="/vadoo-logo-white.png"
-		alt="Vadoo AI"
-		className="h-8 w-auto"
-	  />
+	<div className="flex items-center justify-center mb-8">
+	  <div className="p-3 rounded-2xl glass border border-white/10">
+		<img
+		  src="/vadoo-logo-white.png"
+		  alt="Vadoo AI"
+		  className="h-8 w-auto"
+		/>
+	  </div>
 	</div>
 	{/* General Settings */}
-	<div className="space-y-5">
+	<div className="space-y-6">
 	  <div className="flex items-center justify-between">
-		<h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">General Settings</h3>
-		<button className="text-gray-500 hover:text-white transition-colors">
-		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-			<path d="M8 4l-4 4 4 4V4z"/>
+		<h3 className="text-sm font-semibold text-purple-200 uppercase tracking-wider flex items-center">
+		  <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
 		  </svg>
-		</button>
+		  General Settings
+		</h3>
 	  </div>
 	  {/* Model Selection */}
 	  <div className="space-y-3">
-		<label className="text-sm text-gray-400 font-medium">Model</label>
+		<label className="text-sm text-slate-300 font-medium flex items-center">
+		  <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+		  </svg>
+		  Model
+		</label>
 		<button
 		  type="button"
-		  onClick={handleOpenModelModal}
-		  className={`w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-left flex items-center justify-between cursor-pointer hover:bg-gray-700 transition-colors group ${showModelModal ? 'ring-2 ring-purple-500' : ''}`}
+		  onClick={activeTab === 'edit' ? undefined : handleOpenModelModal}
+		  disabled={activeTab === 'edit'}
+		  className={`w-full glass border border-white/20 rounded-xl px-4 py-3 text-white text-left flex items-center justify-between transition-all duration-200 group ${
+			activeTab === 'edit'
+			  ? 'cursor-not-allowed opacity-60'
+			  : 'cursor-pointer hover:bg-white/10'
+		  } ${showModelModal ? 'ring-2 ring-purple-400 bg-white/10' : ''}`}
 		  aria-pressed={showModelModal}
 		>
 		  <div className="flex items-center gap-3">
-			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
-			  <g>
+			<div className="p-2 rounded-lg bg-purple-500/20 border border-purple-400/30">
+			  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-purple-300">
 				<polygon points="12,3 21,8.25 21,15.75 12,21 3,15.75 3,8.25" stroke="currentColor" strokeWidth="2" fill="none"/>
 				<line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" strokeWidth="2"/>
 				<line x1="3" y1="8.25" x2="12" y2="13.5" stroke="currentColor" strokeWidth="2"/>
 				<line x1="21" y1="8.25" x2="12" y2="13.5" stroke="currentColor" strokeWidth="2"/>
-			  </g>
-			</svg>
-			<span className="font-medium">{selectedModel}</span>
+			  </svg>
+			</div>
+			<div className="flex items-center gap-2">
+			  <span className="font-medium">{selectedModel}</span>
+			  {activeTab === 'edit' && (
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+				  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+				  <circle cx="12" cy="16" r="1"/>
+				  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+				</svg>
+			  )}
+			</div>
 		  </div>
-		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-gray-400 group-hover:text-white transition-colors transform duration-200" style={{ transform: showModelModal ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-	  <path d="M10 8L6 4v8l4-4z" />
-	</svg>
+		  {activeTab !== 'edit' && (
+			<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-slate-400 group-hover:text-white transition-all duration-200" style={{ transform: showModelModal ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+			  <path d="M10 8L6 4v8l4-4z" />
+			</svg>
+		  )}
 		</button>
 	  </div>
 	  {/* Aspect Ratio */}
 	  <div className="space-y-3">
-		<label className="text-sm text-gray-400 font-medium">Aspect Ratio</label>
+		<label className="text-sm text-slate-300 font-medium flex items-center">
+		  <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+		  </svg>
+		  Aspect Ratio
+		</label>
 		<button
 		  type="button"
-		  ref={aspectRatioBtnRef}
 		  onClick={handleOpenAspectRatioPopup}
-		  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-left flex items-center justify-between cursor-pointer hover:bg-gray-700 transition-colors group"
+		  className="w-full glass border border-white/20 rounded-xl px-4 py-3 text-white text-left flex items-center justify-between cursor-pointer hover:bg-white/10 transition-all duration-200 group"
 		>
 		  <div className="flex items-center gap-3">
-			{/* Dynamic SVG for selected aspect ratio */}
-			<svg
-			  width={aspectRatioSvgs[aspectRatio]?.width || 24}
-			  height={aspectRatioSvgs[aspectRatio]?.height || 24}
-			  viewBox={`0 0 ${aspectRatioSvgs[aspectRatio]?.width || 24} ${aspectRatioSvgs[aspectRatio]?.height || 24}`}
-			  fill="none"
-			  stroke="currentColor"
-			  strokeWidth="2"
-			  className="text-white"
-			  style={aspectRatioSvgs[aspectRatio]?.rotate ? { transform: 'rotate(90deg)' } : {}}
-			>
-			  <rect
-				x="1"
-				y="1"
-				width={(aspectRatioSvgs[aspectRatio]?.width || 24) - 2}
-				height={(aspectRatioSvgs[aspectRatio]?.height || 24) - 2}
-				rx="0"
-				stroke="#fff"
+			<div className="p-2 rounded-lg bg-blue-500/20 border border-blue-400/30">
+			  <svg
+				width={Math.min(aspectRatioSvgs[aspectRatio]?.width || 16, 16)}
+				height={Math.min(aspectRatioSvgs[aspectRatio]?.height || 16, 16)}
+				viewBox={`0 0 ${aspectRatioSvgs[aspectRatio]?.width || 16} ${aspectRatioSvgs[aspectRatio]?.height || 16}`}
+				fill="none"
+				stroke="currentColor"
 				strokeWidth="2"
-			  />
-			</svg>
+				className="text-blue-300"
+				style={aspectRatioSvgs[aspectRatio]?.rotate ? { transform: 'rotate(90deg)' } : {}}
+			  >
+				<rect
+				  x="1"
+				  y="1"
+				  width={(aspectRatioSvgs[aspectRatio]?.width || 16) - 2}
+				  height={(aspectRatioSvgs[aspectRatio]?.height || 16) - 2}
+				  rx="2"
+				  stroke="currentColor"
+				  strokeWidth="2"
+				/>
+			  </svg>
+			</div>
 			<span className="font-medium">
 			  {aspectRatio === 'custom' && customWidth && customHeight ? `${customWidth}:${customHeight}` : aspectRatio}
 			</span>
 		  </div>
-		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-gray-400 group-hover:text-white transition-colors transform duration-200" style={{ transform: showAspectRatioPopup ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-	  <path d="M10 8L6 4v8l4-4z" />
-	</svg>
+		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-slate-400 group-hover:text-white transition-all duration-200" style={{ transform: showAspectRatioPopup ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+			<path d="M10 8L6 4v8l4-4z" />
+		  </svg>
 		</button>
 	  </div>
 	  {/* LoRA */}
 	  <div className="space-y-3">
-		<label className="text-sm text-gray-400 font-medium">LoRA</label>
-		<button
-		  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-left text-white hover:bg-gray-700 transition-colors group flex items-center justify-between"
-		  onClick={handleOpenLoRAPopup}
-		>
-		  <div className="flex items-center">
-			<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-white"><rect x="3" y="3" width="18" height="6" rx="2"/><rect x="3" y="9" width="18" height="6" rx="2"/><rect x="3" y="15" width="18" height="6" rx="2"/></svg>
-			<span className="font-medium">{selectedLoRAName || 'Add LoRA'}</span>
-		  </div>
-		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-gray-400 group-hover:text-white transition-colors transform duration-200" style={{ transform: showLoRAPopup ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-			<path d="M10 8L6 4v8l4-4z" />
+		<label className="text-sm text-slate-300 font-medium flex items-center">
+		  <svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
 		  </svg>
-		</button>
+		  LoRA
+		</label>
+		<div className="w-full glass border border-white/20 rounded-xl px-4 py-3 text-white hover:bg-white/10 transition-all duration-200 group flex items-center justify-between">
+		  <div
+			className="flex items-center gap-3 flex-1 cursor-pointer"
+			onClick={handleOpenLoRAPopup}
+		  >
+			<div className="p-2 rounded-lg bg-green-500/20 border border-green-400/30">
+			  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-300">
+				<rect x="3" y="3" width="18" height="6" rx="2"/>
+				<rect x="3" y="9" width="18" height="6" rx="2"/>
+				<rect x="3" y="15" width="18" height="6" rx="2"/>
+			  </svg>
+			</div>
+			<span className="font-medium flex-1">{selectedLoRAName || 'Add LoRA'}</span>
+		  </div>
+		  <div className="flex items-center gap-2">
+			{selectedLoRAName && (
+			  <button
+				onClick={() => {
+				  setSelectedLoRAModelId("");
+				  setSelectedLoRAName("");
+				  setSelectedModel('Flux Dev'); // Reset to default model
+				}}
+				className="p-1 rounded-full hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+				title="Remove LoRA"
+			  >
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+				  <path d="M18 6L6 18M6 6l12 12"/>
+				</svg>
+			  </button>
+			)}
+			<div
+			  className="cursor-pointer p-1"
+			  onClick={handleOpenLoRAPopup}
+			>
+			  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-slate-400 group-hover:text-white transition-all duration-200" style={{ transform: showLoRAPopup ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+				<path d="M10 8L6 4v8l4-4z" />
+			  </svg>
+			</div>
+		  </div>
+		</div>
 	  </div>
 
 	</div>
 	{/* Styles Section */}
 	<div className="space-y-3">
-	  <label className="text-sm text-gray-400 font-medium">Styles</label>
+	  <label className="text-sm text-slate-300 font-medium flex items-center">
+		<svg className="w-4 h-4 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4 4 4 0 004-4V5z"></path>
+		</svg>
+		Styles
+	  </label>
 	  <button
-		className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-left text-white hover:bg-gray-700 transition-colors group"
+		className="w-full glass border border-white/20 rounded-xl px-4 py-3 text-left text-white hover:bg-white/10 transition-all duration-200 group"
 		onClick={handleOpenStylesModal}
-		ref={stylesBtnRef}
 	  >
 		<div className="flex items-center justify-between">
-		  <div className="flex items-center space-x-3">
-			{/* SVG palette icon provided by user */}
-			<svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
-			  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
-			  <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
-			  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
-			  <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
-			  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
-			</svg>
+		  <div className="flex items-center gap-3">
+			<div className="p-2 rounded-lg bg-pink-500/20 border border-pink-400/30">
+			  <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="16" width="16" className="text-pink-300">
+				<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+				<circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+				<circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+				<circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+				<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+			  </svg>
+			</div>
 			<span className="font-medium">{selectedStyle}</span>
 		  </div>
-		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-gray-400 group-hover:text-white transition-colors transform duration-200" style={{ transform: showStylesModal ? 'rotate(0deg)' : 'rotate(180deg)' }}>
-		<path d="M10 8L6 4v8l4-4z" />
-	  </svg>
+		  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="text-slate-400 group-hover:text-white transition-all duration-200" style={{ transform: showStylesModal ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+			<path d="M10 8L6 4v8l4-4z" />
+		  </svg>
 		</div>
 	  </button>
 	</div>
@@ -1225,113 +1279,180 @@ async function handleEditImage() {
 	</div>
   </div>
   {/* Main Content - fixed, does not scroll */}
-  <div className="flex-1 p-8 bg-gray-900/50 min-h-screen overflow-hidden">
+  <div className="flex-1 p-8 min-h-screen overflow-hidden relative z-10">
 	{/* Tab Navigation */}
-	<div className="flex space-x-1 mb-8 bg-gray-900 p-1 rounded-xl w-fit">
+	<div className="flex space-x-1 mb-8 glass-strong p-1 rounded-2xl w-fit border border-white/10">
 	  <button
 		onClick={() => setActiveTab('generate')}
-		className={`px-6 py-3 rounded-lg transition-all duration-200 font-medium ${
-		  activeTab === 'generate' 
-			? 'bg-purple-600 text-white shadow-lg' 
-			: 'text-gray-400 hover:text-white hover:bg-gray-800'
+		className={`px-4 py-3 rounded-xl transition-all duration-300 font-semibold flex items-center gap-2 overflow-hidden ${
+		  activeTab === 'generate'
+			? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/20'
+			: 'text-slate-300 hover:text-white hover:bg-white/10'
 		}`}
 	  >
+		<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+		</svg>
 		Generate Image
 	  </button>
 	  <button
 		onClick={() => setActiveTab('edit')}
-		className={`px-6 py-3 rounded-lg transition-all duration-200 font-medium ${
-		  activeTab === 'edit' 
-			? 'bg-purple-600 text-white shadow-lg' 
-			: 'text-gray-400 hover:text-white hover:bg-gray-800'
+		className={`px-4 py-3 rounded-xl transition-all duration-300 font-semibold flex items-center gap-2 overflow-hidden ${
+		  activeTab === 'edit'
+			? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/20'
+			: 'text-slate-300 hover:text-white hover:bg-white/10'
 		}`}
 	  >
+		<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+		</svg>
 		Edit Image
 	  </button>
 	</div>
 
 	{/* Main Generation Area */}
-	<div className="max-w-4xl mx-auto">
+	<div className="max-w-5xl mx-auto">
 	  {/* Image Preview Area */}
-	  <div className="bg-gray-900 rounded-2xl p-12 mb-8 min-h-96 flex items-center justify-center border border-gray-800 relative overflow-hidden">
-		<div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-blue-600/5"></div>
-		<div className="text-center text-gray-500 relative z-10 w-full">
+	  <div className="glass-strong rounded-3xl p-12 mb-8 min-h-96 flex items-center justify-center border border-white/10 relative overflow-hidden shadow-2xl">
+		<div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-blue-600/5 to-pink-600/10"></div>
+		<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent"></div>
+		<div className="text-center text-slate-400 relative z-10 w-full">
 		  {loading ? (
-			<div className="flex flex-col items-center justify-center space-y-4">
-			  {/* Animated spinner */}
+			<div className="flex flex-col items-center justify-center space-y-6 animate-fadeInUp">
+			  {/* Enhanced animated spinner */}
 			  <div className="relative">
-				<div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-				<div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-blue-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+				{/* Outer ring */}
+				<div className="w-20 h-20 border-4 border-purple-200/30 rounded-full"></div>
+				{/* Spinning gradient ring */}
+				<div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin"></div>
+				{/* Inner pulsing circle */}
+				<div className="absolute inset-3 w-14 h-14 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full animate-pulse border border-purple-400/30"></div>
+				{/* Center icon */}
+				<div className="absolute inset-0 flex items-center justify-center">
+				  <svg className="w-8 h-8 text-purple-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+				  </svg>
+				</div>
 			  </div>
-			  {/* Loading text */}
-			  <div className="text-lg text-white font-medium">Generating image...</div>
-			  {/* Progress indicator with status */}
-			  <div className="text-sm text-gray-400">
-				{generationStatus || 'This may take a few moments'}
+
+			  {/* Loading text with gradient */}
+			  <div className="text-center">
+				<div className="text-2xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+				  Generating image...
+				</div>
+				<div className="text-slate-300 mb-4">
+				  {generationStatus || 'This may take a few moments'}
+				</div>
 			  </div>
-			  {/* Animated dots */}
-			  <div className="flex space-x-1">
-				<div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-				<div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-				<div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+
+			  {/* Enhanced animated dots */}
+			  <div className="flex space-x-2">
+				<div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-bounce shadow-lg shadow-purple-500/50" style={{ animationDelay: '0ms' }}></div>
+				<div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-bounce shadow-lg shadow-purple-500/50" style={{ animationDelay: '150ms' }}></div>
+				<div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-bounce shadow-lg shadow-purple-500/50" style={{ animationDelay: '300ms' }}></div>
+			  </div>
+
+			  {/* Progress bar */}
+			  <div className="w-64 h-2 bg-white/10 rounded-full overflow-hidden">
+				<div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
 			  </div>
 			</div>
 		  ) : generatedImages.length > 0 ? (
-			<div className="flex flex-wrap justify-center gap-6">
+			<div className="flex flex-wrap justify-center gap-8 animate-fadeInUp">
 			  {generatedImages.map((url, i) => (
 				<div key={i} className="relative group">
-				  <img
-					src={url}
-					alt={`Generated image ${i + 1}`}
-					className="rounded-xl max-h-96 border border-gray-700"
-				  />
-				  {/* Download button overlay */}
-				  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-					<button
-					  onClick={() => handleDownloadImage(url, i)}
-					  disabled={downloadingIndex === i}
-					  className="bg-black/70 hover:bg-black/90 text-white p-2 rounded-lg backdrop-blur-sm transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-					  title={downloadingIndex === i ? "Downloading..." : "Download image"}
-					>
-					  {downloadingIndex === i ? (
-						<svg
-						  width="20"
-						  height="20"
-						  viewBox="0 0 24 24"
-						  fill="none"
-						  stroke="currentColor"
-						  strokeWidth="2"
-						  className="animate-spin"
+				  {/* Card container with shadow and border */}
+				  <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-gradient-to-b from-white/5 to-transparent">
+					{/* Image */}
+					<div className="relative overflow-hidden">
+					  <img
+						src={url}
+						alt={`Generated image ${i + 1}`}
+						className="max-h-96 object-cover w-full"
+					  />
+
+					  {/* Image number badge */}
+					  <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded-full border border-white/20">
+						#{i + 1}
+					  </div>
+					</div>
+
+					{/* Action buttons */}
+					<div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-4">
+					  {/* Download button */}
+					  <button
+						onClick={() => handleDownloadImage(url, i)}
+						disabled={downloadingIndex === i}
+						className="glass-strong hover:bg-white/20 text-white px-4 py-2 rounded-xl backdrop-blur-md transition-all duration-200 flex items-center gap-2 font-medium border border-white/20 shadow-lg"
+						title={downloadingIndex === i ? "Downloading..." : "Download image"}
+					  >
+						{downloadingIndex === i ? (
+						  <>
+							<svg
+							  width="16"
+							  height="16"
+							  viewBox="0 0 24 24"
+							  fill="none"
+							  stroke="currentColor"
+							  strokeWidth="2"
+							  className="animate-spin"
+							>
+							  <path d="M21 12a9 9 0 11-6.219-8.56"/>
+							</svg>
+							<span>Saving...</span>
+						  </>
+						) : (
+						  <>
+							<svg
+							  width="16"
+							  height="16"
+							  viewBox="0 0 24 24"
+							  fill="none"
+							  stroke="currentColor"
+							  strokeWidth="2"
+							  strokeLinecap="round"
+							  strokeLinejoin="round"
+							>
+							  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+							  <polyline points="7,10 12,15 17,10"/>
+							  <line x1="12" y1="15" x2="12" y2="3"/>
+							</svg>
+							<span>Download</span>
+						  </>
+						)}
+					  </button>
+
+					  {/* Use as base for edit button (only show if in generate tab) */}
+					  {activeTab === 'generate' && (
+						<button
+						  onClick={() => {
+							setEditImage(url);
+							setActiveTab('edit');
+						  }}
+						  className="glass-strong hover:bg-white/20 text-white px-4 py-2 rounded-xl backdrop-blur-md transition-all duration-200 flex items-center gap-2 font-medium border border-white/20 shadow-lg"
 						>
-						  <path d="M21 12a9 9 0 11-6.219-8.56"/>
-						</svg>
-					  ) : (
-						<svg
-						  width="20"
-						  height="20"
-						  viewBox="0 0 24 24"
-						  fill="none"
-						  stroke="currentColor"
-						  strokeWidth="2"
-						  strokeLinecap="round"
-						  strokeLinejoin="round"
-						>
-						  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-						  <polyline points="7,10 12,15 17,10"/>
-						  <line x1="12" y1="15" x2="12" y2="3"/>
-						</svg>
+						  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+						  </svg>
+						  <span>Edit</span>
+						</button>
 					  )}
-					</button>
+					</div>
 				  </div>
 				</div>
 			  ))}
 			</div>
 		  ) : (
-			<>
-			  <h3 className="text-xl font-semibold mb-2 text-white">Create Amazing Images</h3>
-			  <p className="text-gray-400 mb-1">Your AI-generated masterpiece will appear here</p>
-			  <p className="text-sm text-gray-500">Enter a detailed prompt below to get started</p>
-			</>
+			<div className="animate-fadeInUp">
+			  <div className="mb-6">
+				<svg className="w-20 h-20 mx-auto mb-4 text-purple-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+				</svg>
+			  </div>
+			  <h3 className="text-2xl font-bold mb-3 text-white bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Create Amazing Images</h3>
+			  <p className="text-slate-300 mb-2 text-lg">Your AI-generated masterpiece will appear here</p>
+			  <p className="text-sm text-slate-400">Enter a detailed prompt below to get started</p>
+			</div>
 		  )}
 		</div>
 	  </div>
@@ -1339,47 +1460,79 @@ async function handleEditImage() {
 	  {/* Prompt Input with Upload Button (only in Edit tab) */}
 	  <div className="relative mb-4">
 		{activeTab === 'edit' && (
-		  <div className="flex items-center mb-2">
-			{/* Upload button now opens URL modal */}
+		  <div className="flex items-center mb-4">
+			{/* Enhanced upload button */}
 			<button
 			  type="button"
-			  className="cursor-pointer bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-white font-medium transition-colors hover:bg-gray-700 hover:border-gray-500 mr-3 shadow-sm"
+			  className="cursor-pointer glass-strong border border-white/20 rounded-xl px-6 py-3 text-white font-semibold transition-all duration-200 hover:bg-white/10 hover:border-white/30 mr-4 shadow-lg flex items-center gap-2 hover:scale-105"
 			  onClick={() => setShowImageUrlModal(true)}
 			>
+			  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+			  </svg>
 			  {editImage ? 'Change Image' : 'Upload Image'}
 			</button>
 			{editImage && (
-			  <img src={editImage} alt="To Edit" className="rounded-lg h-10 w-10 object-cover border border-gray-700 ml-2" />
+			  <div className="relative group">
+				<img src={editImage} alt="To Edit" className="rounded-xl h-12 w-12 object-cover border border-white/20 shadow-lg transition-transform duration-200 group-hover:scale-110" />
+				<div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+				  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+				  </svg>
+				</div>
+			  </div>
 			)}
-				   </div>
+		  </div>
 		)}
 
-		{/* Image URL Modal */}
+		{/* Enhanced Image URL Modal */}
 		{showImageUrlModal && (
-		  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-			<div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-full max-w-sm shadow-2xl">
-			  <h2 className="text-lg font-semibold text-white mb-4">Enter Image URL</h2>
+		  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeInScale">
+			<div className="glass-strong border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl animate-fadeInUp">
+			  <div className="text-center mb-6">
+				<div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30 flex items-center justify-center">
+				  <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+				  </svg>
+				</div>
+				<h2 className="text-2xl font-bold text-white mb-2">Add Image URL</h2>
+				<p className="text-slate-400">Provide a direct link to the image you want to edit</p>
+			  </div>
+
 			  <input
 				type="text"
-				className="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white mb-4"
+				className="w-full p-4 rounded-xl glass border border-white/20 text-white mb-6 placeholder-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
 				placeholder="https://example.com/image.jpg"
 				value={imageUrlInput}
 				onChange={e => setImageUrlInput(e.target.value)}
+				onKeyDown={(e) => {
+				  if (e.key === 'Enter' && imageUrlInput.trim()) {
+					setEditImage(imageUrlInput);
+					setShowImageUrlModal(false);
+					setImageUrlInput("");
+				  }
+				}}
 			  />
-			  <div className="flex justify-end gap-2">
+
+			  <div className="flex gap-3">
 				<button
-				  className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600"
+				  className="flex-1 px-6 py-3 rounded-xl glass border border-white/20 text-white hover:bg-white/10 transition-all font-medium"
 				  onClick={() => setShowImageUrlModal(false)}
-				>Cancel</button>
+				>
+				  Cancel
+				</button>
 				<button
-				  className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700"
+				  className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 transition-all font-semibold shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 				  onClick={() => {
 					setEditImage(imageUrlInput);
 					setShowImageUrlModal(false);
 					setImageUrlInput("");
 				  }}
 				  disabled={!imageUrlInput.trim()}
-				>Submit</button>
+				>
+				  Add Image
+				</button>
 			  </div>
 			</div>
 		  </div>
@@ -1390,54 +1543,97 @@ async function handleEditImage() {
 			<div className="flex flex-wrap gap-2 mb-2">
 				{/* Style indicator */}
 				{selectedStyle && selectedStyle !== 'None' && (
-					<div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-xs inline-flex items-center">
-						<svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="14" width="14" className="mr-1">
+					<div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-xs inline-flex items-center gap-2">
+						<svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="14" width="14">
 							<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
 							<circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
 							<circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
 							<circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
 							<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
 						</svg>
-						Style: {selectedStyle}
+						<span>Style: {selectedStyle}</span>
+						<button
+							onClick={() => setSelectedStyle('None')}
+							className="ml-1 hover:bg-red-500/20 rounded-full p-0.5 text-blue-400 hover:text-red-400 transition-colors"
+							title="Remove style"
+						>
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+								<path d="M18 6L6 18M6 6l12 12"/>
+							</svg>
+						</button>
 					</div>
 				)}
 
 				{/* LoRA indicator */}
 				{selectedLoRAModelId && selectedLoRAName && (
-					<div className="px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs inline-flex items-center">
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+					<div className="px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs inline-flex items-center gap-2">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 							<rect x="3" y="3" width="18" height="6" rx="2"/>
 							<rect x="3" y="9" width="18" height="6" rx="2"/>
 							<rect x="3" y="15" width="18" height="6" rx="2"/>
 						</svg>
-						LoRA: {selectedLoRAName}
+						<span>LoRA: {selectedLoRAName}</span>
+						<button
+							onClick={() => {
+								setSelectedLoRAModelId("");
+								setSelectedLoRAName("");
+								setSelectedModel('Flux Dev'); // Reset to default model
+							}}
+							className="ml-1 hover:bg-red-500/20 rounded-full p-0.5 text-purple-400 hover:text-red-400 transition-colors"
+							title="Remove LoRA"
+						>
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+								<path d="M18 6L6 18M6 6l12 12"/>
+							</svg>
+						</button>
 					</div>
 				)}
 			</div>
 
-			<div className="flex items-center space-x-4 bg-gray-900 rounded-2xl p-4 border border-gray-800 hover:border-gray-700 transition-colors">
-				<div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
-					<span className="text-white text-lg">✨</span>
+			<div className="flex items-center space-x-4 glass-strong rounded-2xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300 shadow-lg">
+				<div className="w-12 h-12 flex items-center justify-center flex-shrink-0 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30">
+					<svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+					</svg>
 				</div>
 				<input
 					type="text"
 					value={prompt}
 					onChange={(e) => setPrompt(e.target.value)}
 					placeholder={activeTab === 'edit' && editImage ? "Describe how you want to edit the image..." : "Describe your creative vision in detail..."}
-					className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-lg"
+					className="flex-1 bg-transparent text-white placeholder-slate-400 outline-none text-lg font-medium"
+					onKeyDown={(e) => {
+					  if (e.key === 'Enter' && !loading && prompt.trim() && (activeTab !== 'edit' || editImage)) {
+						activeTab === 'edit' ? handleEditImage() : handleGenerate();
+					  }
+					}}
 				/>
 				<button
 			type="button"
-			className={`flex items-center justify-center gap-2 ${loading ? 'bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-2 rounded-full text-sm transition-colors duration-200`}
+			className={`flex items-center justify-center gap-2 ${
+			  loading
+				? 'bg-gradient-to-r from-purple-600 to-purple-700 cursor-not-allowed'
+				: prompt.trim() && (activeTab !== 'edit' || editImage)
+				  ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 hover:scale-105 shadow-lg shadow-purple-500/25'
+				  : 'bg-slate-600 cursor-not-allowed'
+			} text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200`}
 			onClick={activeTab === 'edit' ? handleEditImage : handleGenerate}
 			disabled={loading || !prompt.trim() || (activeTab === 'edit' && !editImage)}
 		  >
 			{loading ? (
-			  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-				<path d="M21 12a9 9 0 11-6.219-8.56" />
-			  </svg>
+			  <>
+				<svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+				  <path d="M21 12a9 9 0 11-6.219-8.56" />
+				</svg>
+				<span>Generating...</span>
+			  </>
 			) : (
-			  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M1 1.91L1.78 1.5L15 7.44899V8.3999L1.78 14.33L1 13.91L2.58311 8L1 1.91ZM3.6118 8.5L2.33037 13.1295L13.5 7.8999L2.33037 2.83859L3.6118 7.43874L9 7.5V8.5H3.6118Z"></path></svg>
+			  <>
+				<svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="18" width="18">
+				  <path d="M1 1.91L1.78 1.5L15 7.44899V8.3999L1.78 14.33L1 13.91L2.58311 8L1 1.91ZM3.6118 8.5L2.33037 13.1295L13.5 7.8999L2.33037 2.83859L3.6118 7.43874L9 7.5V8.5H3.6118Z"></path>
+				</svg>
+				<span>{activeTab === 'edit' ? 'Edit' : 'Generate'}</span>
+			  </>
 			)}
 				</button>
 			</div>
@@ -1521,16 +1717,15 @@ async function handleEditImage() {
 `}</style>
 
 			{/* Aspect Ratio Popup */}
-			<AspectRatioPopup 
-				isOpen={showAspectRatioPopup} 
-				onClose={() => setShowAspectRatioPopup(false)} 
-				selectedRatio={aspectRatio} 
-				setSelectedRatio={setAspectRatio} 
-				customWidth={customWidth} 
-				setCustomWidth={setCustomWidth} 
-				customHeight={customHeight} 
-				setCustomHeight={setCustomHeight} 
-				anchorRef={aspectRatioBtnRef}
+			<AspectRatioPopup
+				isOpen={showAspectRatioPopup}
+				onClose={() => setShowAspectRatioPopup(false)}
+				aspectRatio={aspectRatio}
+				setAspectRatio={setAspectRatio}
+				customWidth={customWidth}
+				setCustomWidth={setCustomWidth}
+				customHeight={customHeight}
+				setCustomHeight={setCustomHeight}
 			/>
 
 		
@@ -1540,7 +1735,7 @@ async function handleEditImage() {
 
 
 			{/* Styles Modal */}
-			<StylesModal isOpen={showStylesModal} onClose={() => setShowStylesModal(false)} selectedStyle={selectedStyle} setSelectedStyle={setSelectedStyle} anchorRef={stylesBtnRef} />
+			<StylesModal isOpen={showStylesModal} onClose={() => setShowStylesModal(false)} selectedStyle={selectedStyle} setSelectedStyle={setSelectedStyle} />
 		</>
 	);
 }

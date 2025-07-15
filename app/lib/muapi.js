@@ -4,7 +4,7 @@ const POLL_INTERVAL = 1000; // 1 second
 const MAX_POLL_TIME = 300000; // 5 minutes
 
 // Generate image for LoRA models
-export async function generateLoraImage({ prompt, model_id, width, height, num_images, apiKey, aspectRatio, onLog }) {
+export async function generateLoraImage({ prompt, model_id, width, height, num_images, apiKey, onLog }) {
   const proxyUrl = '/api/proxy';
   const apiUrl = 'https://api.muapi.ai/api/v1/flux_dev_lora_image';
 
@@ -26,10 +26,7 @@ export async function generateLoraImage({ prompt, model_id, width, height, num_i
     num_images
   };
 
-  // Add aspect ratio if provided
-  if (aspectRatio) {
-    payload.aspect_ratio = aspectRatio;
-  }
+  // Note: LoRA requests should not include aspect_ratio parameter
 
   // Log payload to browser console for debugging
   console.log('🚀 LORA REQUEST PAYLOAD:', JSON.stringify(payload, null, 2));
@@ -72,8 +69,9 @@ const modelEndpointMap = {
   'HiDream I1 Fast': 'https://api.muapi.ai/api/v1/hidream_i1_fast_image',
   'HiDream I1 Dev': 'https://api.muapi.ai/api/v1/hidream_i1_dev_image',
   'HiDream I1 Full': 'https://api.muapi.ai/api/v1/hidream_i1_full_image',
-  // Flux Kontext model (no width/height required)
+  // Flux Kontext models (no width/height required)
   'Flux Kontext Dev T2I': 'https://api.muapi.ai/api/v1/flux_kontext_dev_text_to_image',
+  'Flux Kontext Dev I2I': 'https://api.muapi.ai/api/v1/flux_kontext_dev_image_to_image',
   // Flux LoRA model (requires model_id array)
   'Flux LoRA': 'https://api.muapi.ai/api/v1/flux_dev_lora_image',
   
@@ -90,7 +88,8 @@ const modelEndpointMap = {
 
 // Models that don't require width/height parameters
 const modelsWithoutDimensions = [
-  'Flux Kontext Dev T2I'
+  'Flux Kontext Dev T2I',
+  'Flux Kontext Dev I2I'
 ];
 
 // Generate image for Flux Dev and similar models
