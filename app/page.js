@@ -103,7 +103,7 @@ export default function VadooAI() {
 	const [showLoRAPopup, setShowLoRAPopup] = useState(false);
 
 	const [showStylesModal, setShowStylesModal] = useState(false);
-	const [selectedStyle, setSelectedStyle] = useState('Cinematic');
+	const [selectedStyle, setSelectedStyle] = useState('None');
 	const [numImages, setNumImages] = useState(1); // NEW: state for number of images
 	const [loading, setLoading] = useState(false);
 	const [generationStatus, setGenerationStatus] = useState('');
@@ -641,6 +641,52 @@ const stylesTabData = [
 		setShowStylesModal(true);
 	};
 
+	// Function to apply style to prompt
+	const applyStyleToPrompt = (basePrompt, style) => {
+		if (!style || style === 'None') {
+			return basePrompt;
+		}
+
+		// Style mapping for better prompt enhancement
+		const stylePrompts = {
+			'3D Render': '3D rendered, high quality 3D graphics, volumetric lighting',
+			'Cartoon': 'cartoon style, animated, colorful, stylized',
+			'Comic': 'comic book style, comic art, graphic novel illustration',
+			'Dark Light': 'dark lighting, dramatic shadows, moody atmosphere, chiaroscuro',
+			'Dark Sci-Fi': 'dark sci-fi, cyberpunk, futuristic, dystopian, neon lights',
+			'Fantasy': 'fantasy art, magical, mystical, ethereal, enchanted',
+			'Illustration': 'digital illustration, artistic, detailed artwork',
+			'Cinematic': 'cinematic lighting, movie still, dramatic composition, film photography',
+			'Nature': 'natural lighting, organic, earthy tones, landscape photography',
+			'Oil Painting': 'oil painting style, classical art, painterly, brushstrokes',
+			'Pixel Art': 'pixel art style, 8-bit, retro gaming, pixelated',
+			'Product': 'product photography, clean background, professional lighting, commercial',
+			'Retro': 'retro style, vintage, nostalgic, classic aesthetic',
+			'Sketch': 'pencil sketch, hand-drawn, artistic sketch, line art',
+			'Japanese': 'japanese art style, anime, manga, traditional japanese aesthetics',
+			'Watercolor': 'watercolor painting, soft colors, artistic, painted texture',
+			'Dramatic': 'dramatic lighting, high contrast, spotlight, theatrical',
+			'High Flash': 'high flash photography, sharp lighting, bright, studio flash',
+			'Iridescent': 'iridescent colors, rainbow reflections, holographic, prismatic',
+			'Long Exposure': 'long exposure photography, motion blur, light trails, dreamy',
+			'Natural': 'natural lighting, soft sunlight, golden hour, warm tones',
+			'Neon': 'neon lighting, vibrant colors, electric, glowing',
+			'Silhouette': 'silhouette photography, backlit, dramatic contrast',
+			'Studio': 'studio lighting, professional photography, controlled lighting',
+			'Aerial View': 'aerial view, bird\'s eye perspective, overhead shot',
+			'Close-up': 'close-up shot, macro photography, detailed, intimate framing',
+			'Ground View': 'ground level view, worm\'s eye view, low perspective',
+			'Low Angle': 'low angle shot, dramatic perspective, powerful composition',
+			'Midshot': 'medium shot, balanced framing, portrait composition',
+			'Portrait': 'portrait photography, headshot, professional portrait',
+			'Tiltshot': 'tilted angle, dynamic composition, diagonal framing',
+			'Wide Shot': 'wide shot, establishing shot, expansive view, landscape'
+		};
+
+		const stylePrompt = stylePrompts[style] || `${style.toLowerCase()} style`;
+		return `${basePrompt}, ${stylePrompt}`;
+	};
+
 	// Replace the prompt submit button handler:
 const [logMessages, setLogMessages] = useState([]);
 
@@ -672,8 +718,16 @@ async function handleGenerate() {
 				width = Math.round(base * w / h);
 			}
 		}
+		// Apply style to prompt if selected
+		const enhancedPrompt = applyStyleToPrompt(prompt, selectedStyle);
+
+		// Log style application
+		if (selectedStyle && selectedStyle !== 'None') {
+			setLogMessages(logs => [...logs, `[Style Applied] ${selectedStyle} - Enhanced prompt: ${enhancedPrompt}`]);
+		}
+
 		const payload = {
-			prompt,
+			prompt: enhancedPrompt,
 			width,
 			height,
 			num_images: numImages || 1,
@@ -695,7 +749,7 @@ async function handleGenerate() {
 		}
 		// Use LoRA generation
 		data = await generateLoraImage({
-			prompt,
+			prompt: enhancedPrompt, // Use the enhanced prompt with style
 			model_id: selectedLoRAModelId,
 			width,
 			height,
@@ -791,8 +845,16 @@ async function handleEditImage() {
 			}
 		}
 
+		// Apply style to prompt if selected
+		const enhancedPrompt = applyStyleToPrompt(prompt, selectedStyle);
+
+		// Log style application
+		if (selectedStyle && selectedStyle !== 'None') {
+			setLogMessages(logs => [...logs, `[Style Applied] ${selectedStyle} - Enhanced prompt: ${enhancedPrompt}`]);
+		}
+
 		const payload = {
-			prompt,
+			prompt: enhancedPrompt,
 			imageUrl: editImage,
 			width,
 			height,
@@ -1313,18 +1375,33 @@ async function handleEditImage() {
 		  </div>
 		)}
 
-		<div className="flex items-center space-x-4 bg-gray-900 rounded-2xl p-4 border border-gray-800 hover:border-gray-700 transition-colors">
-				   <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
-			<span className="text-white text-lg">✨</span>
-		  </div>
-		  <input
-			type="text"
-			value={prompt}
-			onChange={(e) => setPrompt(e.target.value)}
-			placeholder={activeTab === 'edit' && editImage ? "Describe how you want to edit the image..." : "Describe your creative vision in detail..."}
-			className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-lg"
-		  />
-		  <button
+		<div className="flex flex-col w-full">
+			{/* Style indicator */}
+			{selectedStyle && selectedStyle !== 'None' && (
+				<div className="mb-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-xs inline-flex items-center self-start">
+					<svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="14" width="14" className="mr-1">
+						<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+						<circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+						<circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+						<circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+						<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+					</svg>
+					Style: {selectedStyle}
+				</div>
+			)}
+
+			<div className="flex items-center space-x-4 bg-gray-900 rounded-2xl p-4 border border-gray-800 hover:border-gray-700 transition-colors">
+				<div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+					<span className="text-white text-lg">✨</span>
+				</div>
+				<input
+					type="text"
+					value={prompt}
+					onChange={(e) => setPrompt(e.target.value)}
+					placeholder={activeTab === 'edit' && editImage ? "Describe how you want to edit the image..." : "Describe your creative vision in detail..."}
+					className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-lg"
+				/>
+				<button
 			type="button"
 			className={`flex items-center justify-center gap-2 ${loading ? 'bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white px-2 py-2 rounded-full text-sm transition-colors duration-200`}
 			onClick={activeTab === 'edit' ? handleEditImage : handleGenerate}
@@ -1337,7 +1414,8 @@ async function handleEditImage() {
 			) : (
 			  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M1 1.91L1.78 1.5L15 7.44899V8.3999L1.78 14.33L1 13.91L2.58311 8L1 1.91ZM3.6118 8.5L2.33037 13.1295L13.5 7.8999L2.33037 2.83859L3.6118 7.43874L9 7.5V8.5H3.6118Z"></path></svg>
 			)}
-		  </button>
+				</button>
+			</div>
 		</div>
 	  </div>
 	</div>
