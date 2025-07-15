@@ -354,6 +354,10 @@ export default function VadooAI() {
 					onClick={() => {
 					  setSelectedLoRAModelId(model_id);
 					  setSelectedLoRAName(option.name);
+					  // Automatically set model to Flux LoRA when a LoRA is selected
+					  setSelectedModel('Flux LoRA');
+					  // Log the automatic model change
+					  setLogMessages(logs => [...logs, `[LoRA Selected] ${option.name} - Model automatically set to Flux LoRA`]);
 					  onClose();
 					}}
 					className={`w-full bg-gray-800 rounded-lg p-3 flex items-center space-x-3 text-left transition-all ${
@@ -393,6 +397,12 @@ export default function VadooAI() {
 				  onClick={() => {
 					setSelectedLoRAModelId(option.model_id || "");
 					setSelectedLoRAName(option.name || "None");
+					// Automatically set model to Flux LoRA when a LoRA is selected (except for "None")
+					if (option.model_id && option.name !== "None") {
+					  setSelectedModel('Flux LoRA');
+					  // Log the automatic model change
+					  setLogMessages(logs => [...logs, `[LoRA Selected] ${option.name} - Model automatically set to Flux LoRA`]);
+					}
 					onClose();
 				  }}
 				  className={`w-full bg-gray-800 rounded-lg p-4 flex items-start space-x-4 text-left transition-all ${
@@ -1376,19 +1386,34 @@ async function handleEditImage() {
 		)}
 
 		<div className="flex flex-col w-full">
-			{/* Style indicator */}
-			{selectedStyle && selectedStyle !== 'None' && (
-				<div className="mb-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-xs inline-flex items-center self-start">
-					<svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="14" width="14" className="mr-1">
-						<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
-						<circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
-						<circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
-						<circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
-						<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
-					</svg>
-					Style: {selectedStyle}
-				</div>
-			)}
+			{/* Indicators for active settings */}
+			<div className="flex flex-wrap gap-2 mb-2">
+				{/* Style indicator */}
+				{selectedStyle && selectedStyle !== 'None' && (
+					<div className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-xs inline-flex items-center">
+						<svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="14" width="14" className="mr-1">
+							<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+							<circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+							<circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+							<circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+							<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+						</svg>
+						Style: {selectedStyle}
+					</div>
+				)}
+
+				{/* LoRA indicator */}
+				{selectedLoRAModelId && selectedLoRAName && (
+					<div className="px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs inline-flex items-center">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+							<rect x="3" y="3" width="18" height="6" rx="2"/>
+							<rect x="3" y="9" width="18" height="6" rx="2"/>
+							<rect x="3" y="15" width="18" height="6" rx="2"/>
+						</svg>
+						LoRA: {selectedLoRAName}
+					</div>
+				)}
+			</div>
 
 			<div className="flex items-center space-x-4 bg-gray-900 rounded-2xl p-4 border border-gray-800 hover:border-gray-700 transition-colors">
 				<div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
